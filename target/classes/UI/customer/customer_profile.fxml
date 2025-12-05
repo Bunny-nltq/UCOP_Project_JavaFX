@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.ucop.controller.customer.CustomerProfileController"
+            prefWidth="500" prefHeight="400">
+
+    <children>
+
+        <!-- TIÊU ĐỀ -->
+        <Label text="Thông tin cá nhân"
+               layoutX="150" layoutY="20"
+               style="-fx-font-size:20px; -fx-font-weight:bold;" />
+
+        <!-- HỌ TÊN -->
+        <Label text="Họ tên:" layoutX="80" layoutY="90" />
+        <TextField fx:id="txtFullname"
+                   layoutX="170" layoutY="85"
+                   prefWidth="250"/>
+
+        <!-- EMAIL -->
+        <Label text="Email:" layoutX="80" layoutY="130" />
+        <TextField fx:id="txtEmail"
+                   layoutX="170" layoutY="125"
+                   prefWidth="250"
+                   editable="false" />
+
+        <!-- SỐ ĐIỆN THOẠI -->
+        <Label text="Số điện thoại:" layoutX="80" layoutY="170" />
+        <TextField fx:id="txtPhone"
+                   layoutX="170" layoutY="165"
+                   prefWidth="250"/>
+
+        <!-- ĐỊA CHỈ -->
+        <Label text="Địa chỉ:" layoutX="80" layoutY="210" />
+        <TextField fx:id="txtAddress"
+                   layoutX="170" layoutY="205"
+                   prefWidth="250"/>
+
+        <!-- BUTTON CẬP NHẬT -->
+        <Button text="Cập nhật"
+                layoutX="170" layoutY="260"
+                prefWidth="120"
+                onAction="#updateProfile"
+                style="-fx-background-color: #4CAF50; -fx-text-fill:white;" />
+
+        <!-- LABEL THÔNG BÁO -->
+        <Label fx:id="lblMsg"
+               layoutX="170" layoutY="310"
+               style="-fx-text-fill:red;" />
+
+    </children>
+</AnchorPane>

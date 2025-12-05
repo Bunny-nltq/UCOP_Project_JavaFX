@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.ucop.controller.customer.LoginController"
+            prefWidth="400" prefHeight="300">
+
+    <children>
+
+        <Label text="Customer Login"
+               layoutX="130" layoutY="25"
+               style="-fx-font-size:20px; -fx-font-weight:bold;"/>
+
+        <TextField fx:id="txtUser"
+                   layoutX="100" layoutY="90"
+                   prefWidth="200"
+                   promptText="Username"/>
+
+        <PasswordField fx:id="txtPass"
+                       layoutX="100" layoutY="130"
+                       prefWidth="200"
+                       promptText="Password"/>
+
+        <Button text="Login"
+                layoutX="100" layoutY="180"
+                prefWidth="80"
+                onAction="#handleLogin"/>
+
+        <Button text="Register"
+                layoutX="220" layoutY="180"
+                prefWidth="80"
+                onAction="#goRegister"/>
+
+        <Label fx:id="lblMsg"
+               layoutX="100" layoutY="220"
+               prefWidth="250"
+               textFill="red"/>
+    </children>
+</AnchorPane>
