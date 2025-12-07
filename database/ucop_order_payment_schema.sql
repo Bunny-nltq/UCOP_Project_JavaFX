@@ -206,6 +206,52 @@ CREATE INDEX idx_appointment_status ON appointments(status);
 CREATE INDEX idx_appointment_scheduled ON appointments(scheduled_time);
 
 -- ============================================
+-- 6. PROMOTIONS & PROMOTION USAGE
+-- ============================================
+
+CREATE TABLE promotions (
+    id BIGINT PRIMARY KEY IDENTITY(1,1),
+    code NVARCHAR(50) UNIQUE NOT NULL,
+    name NVARCHAR(100) NOT NULL,
+    description NVARCHAR(500),
+    discount_type NVARCHAR(20) NOT NULL, -- PERCENTAGE, FIXED_AMOUNT, ITEM, CART
+    discount_value DECIMAL(19,4) NOT NULL,
+    min_order_amount DECIMAL(19,4) DEFAULT 0,
+    max_discount_amount DECIMAL(19,4),
+    applicable_to NVARCHAR(20) NOT NULL DEFAULT 'ALL', -- ALL, SPECIFIC_ITEMS, SPECIFIC_CATEGORIES
+    applicable_item_ids NVARCHAR(MAX), -- Comma-separated item IDs
+    max_usage_total INT,
+    max_usage_per_user INT DEFAULT 1,
+    usage_count INT DEFAULT 0,
+    start_date DATETIME NOT NULL,
+    end_date DATETIME NOT NULL,
+    is_active BIT NOT NULL DEFAULT 1,
+    is_stackable BIT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT GETDATE(),
+    updated_at DATETIME NOT NULL DEFAULT GETDATE(),
+    created_by NVARCHAR(100),
+    updated_by NVARCHAR(100)
+);
+
+CREATE TABLE promotion_usages (
+    id BIGINT PRIMARY KEY IDENTITY(1,1),
+    promotion_id BIGINT NOT NULL,
+    order_id BIGINT NOT NULL,
+    account_id BIGINT NOT NULL,
+    discount_amount DECIMAL(19,4) NOT NULL,
+    used_at DATETIME NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (promotion_id) REFERENCES promotions(id),
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_promotion_code ON promotions(code);
+CREATE INDEX idx_promotion_active ON promotions(is_active);
+CREATE INDEX idx_promotion_dates ON promotions(start_date, end_date);
+CREATE INDEX idx_promotion_usage_promo ON promotion_usages(promotion_id);
+CREATE INDEX idx_promotion_usage_order ON promotion_usages(order_id);
+CREATE INDEX idx_promotion_usage_account ON promotion_usages(account_id);
+
+-- ============================================
 -- SAMPLE DATA (Optional)
 -- ============================================
 
@@ -225,3 +271,12 @@ VALUES
     (2, 1, 150, 0, 10, 0),
     (2, 4, 30, 0, 10, 0),
     (3, 2, 80, 0, 10, 0);
+
+-- Insert sample promotions
+INSERT INTO promotions (code, name, description, discount_type, discount_value, min_order_amount, max_discount_amount, start_date, end_date, is_active, max_usage_total, max_usage_per_user)
+VALUES 
+    ('WELCOME10', N'Giảm 10% cho đơn hàng đầu tiên', N'Mã giảm giá 10% cho khách hàng mới', 'PERCENTAGE', 10.00, 100000, 50000, GETDATE(), DATEADD(MONTH, 3, GETDATE()), 1, 1000, 1),
+    ('SALE50K', N'Giảm 50,000đ', N'Giảm giá cố định 50,000đ cho đơn từ 500,000đ', 'FIXED_AMOUNT', 50000.00, 500000, NULL, GETDATE(), DATEADD(MONTH, 1, GETDATE()), 1, 500, 2),
+    ('FREESHIP', N'Miễn phí vận chuyển', N'Miễn phí ship cho đơn từ 300,000đ', 'FIXED_AMOUNT', 30000.00, 300000, 30000, GETDATE(), DATEADD(MONTH, 2, GETDATE()), 1, NULL, 5),
+    ('VIP20', N'Giảm 20% VIP', N'Mã giảm 20% cho thành viên VIP', 'PERCENTAGE', 20.00, 1000000, 200000, GETDATE(), DATEADD(MONTH, 6, GETDATE()), 1, 100, 10);
+
