@@ -29,7 +29,7 @@ public class MainApp extends Application {
             
             // Load FXML - CUSTOMER UI
             System.out.println("Loading Customer UI...");
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/customer-main.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/UI/customer/customer-main.fxml"));
             Parent root = loader.load();
             
             // Create scene

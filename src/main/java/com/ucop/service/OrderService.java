@@ -1,7 +1,7 @@
 package com.ucop.service;
 
 import com.ucop.entity.*;
-import com.ucop.dto.CartItemDTO;
+import com.ucop.dao.CartItemDAO;
 import com.ucop.repository.*;
 import com.ucop.util.OrderNumberGenerator;
 import com.ucop.util.PaymentCalculator;
@@ -49,7 +49,7 @@ public class OrderService {
     /**
      * Add item to cart
      */
-    public void addToCart(Long cartId, CartItemDTO itemDTO) {
+    public void addToCart(Long cartId, CartItemDAO itemDTO) {
         Optional<Cart> cartOpt = cartRepository.findById(cartId);
         if (cartOpt.isEmpty()) {
             throw new IllegalArgumentException("Cart not found");

@@ -1,7 +1,7 @@
 package com.ucop.service;
 
-import com.ucop.dto.PromotionApplyResultDTO;
-import com.ucop.dto.PromotionDTO;
+import com.ucop.dao.PromotionApplyResultDAO;
+import com.ucop.dao.PromotionDAO;
 import com.ucop.entity.Order;
 import com.ucop.entity.Promotion;
 import com.ucop.entity.PromotionUsage;
@@ -26,7 +26,7 @@ public class PromotionService {
     }
 
     // CRUD Operations
-    public Promotion createPromotion(PromotionDTO dto) {
+    public Promotion createPromotion(PromotionDAO dto) {
         validatePromotionDTO(dto);
         
         Promotion promotion = new Promotion();
@@ -35,7 +35,7 @@ public class PromotionService {
         return promotionRepository.save(promotion);
     }
 
-    public Promotion updatePromotion(Long id, PromotionDTO dto) {
+    public Promotion updatePromotion(Long id, PromotionDAO dto) {
         Promotion promotion = promotionRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Promotion not found with id: " + id));
         
@@ -68,19 +68,19 @@ public class PromotionService {
     }
 
     // Apply Promotion Logic
-    public PromotionApplyResultDTO applyPromotion(String promotionCode, Order order, Long accountId) {
+    public PromotionApplyResultDAO applyPromotion(String promotionCode, Order order, Long accountId) {
         // Find promotion
         Promotion promotion = promotionRepository.findByCode(promotionCode)
             .orElse(null);
         
         if (promotion == null) {
-            return PromotionApplyResultDTO.failure("Mã giảm giá không tồn tại!");
+            return PromotionApplyResultDAO.failure("Mã giảm giá không tồn tại!");
         }
 
         // Validate promotion
         String validationError = validatePromotionForOrder(promotion, order, accountId);
         if (validationError != null) {
-            return PromotionApplyResultDTO.failure(validationError);
+            return PromotionApplyResultDAO.failure(validationError);
         }
 
         // Calculate discount
@@ -110,7 +110,7 @@ public class PromotionService {
         order.setGrandTotal(finalTotal);
         order.setAmountDue(finalTotal);
 
-        return PromotionApplyResultDTO.success(
+        return PromotionApplyResultDAO.success(
             promotionCode, 
             discountAmount, 
             originalTotal, 
@@ -229,7 +229,7 @@ public class PromotionService {
             .collect(Collectors.toList());
     }
 
-    private void validatePromotionDTO(PromotionDTO dto) {
+    private void validatePromotionDTO(PromotionDAO dto) {
         if (dto.getCode() == null || dto.getCode().trim().isEmpty()) {
             throw new IllegalArgumentException("Promotion code is required");
         }
@@ -250,7 +250,7 @@ public class PromotionService {
         }
     }
 
-    private void mapDtoToEntity(PromotionDTO dto, Promotion promotion) {
+    private void mapDtoToEntity(PromotionDAO dto, Promotion promotion) {
         promotion.setCode(dto.getCode());
         promotion.setName(dto.getName());
         promotion.setDescription(dto.getDescription());
@@ -268,8 +268,8 @@ public class PromotionService {
         promotion.setStackable(dto.getStackable() != null ? dto.getStackable() : false);
     }
 
-    public PromotionDTO convertToDTO(Promotion promotion) {
-        PromotionDTO dto = new PromotionDTO();
+    public PromotionDAO convertToDTO(Promotion promotion) {
+        PromotionDAO dto = new PromotionDAO();
         dto.setId(promotion.getId());
         dto.setCode(promotion.getCode());
         dto.setName(promotion.getName());
@@ -294,47 +294,47 @@ public class PromotionService {
      * Apply promotion for cart (without order)
      * Used in customer UI to preview discount
      */
-    public PromotionApplyResultDTO applyPromotion(String promotionCode, Long accountId, 
+    public PromotionApplyResultDAO applyPromotion(String promotionCode, Long accountId, 
                                                    BigDecimal cartTotal, List<Long> itemIds) {
         // Find promotion by code
         Promotion promotion = promotionRepository.findByCode(promotionCode)
             .orElse(null);
 
         if (promotion == null) {
-            return PromotionApplyResultDTO.failure("Mã giảm giá không tồn tại!");
+            return PromotionApplyResultDAO.failure("Mã giảm giá không tồn tại!");
         }
 
         // Validate promotion
         LocalDateTime now = LocalDateTime.now();
 
         if (!promotion.getActive()) {
-            return PromotionApplyResultDTO.failure("Mã giảm giá đã bị vô hiệu hóa!");
+            return PromotionApplyResultDAO.failure("Mã giảm giá đã bị vô hiệu hóa!");
         }
 
         if (now.isBefore(promotion.getStartDate())) {
-            return PromotionApplyResultDTO.failure("Mã giảm giá chưa có hiệu lực!");
+            return PromotionApplyResultDAO.failure("Mã giảm giá chưa có hiệu lực!");
         }
 
         if (now.isAfter(promotion.getEndDate())) {
-            return PromotionApplyResultDTO.failure("Mã giảm giá đã hết hạn!");
+            return PromotionApplyResultDAO.failure("Mã giảm giá đã hết hạn!");
         }
 
         if (promotion.getMaxUsageTotal() != null && 
             promotion.getUsageCount() >= promotion.getMaxUsageTotal()) {
-            return PromotionApplyResultDTO.failure("Mã giảm giá đã hết lượt sử dụng!");
+            return PromotionApplyResultDAO.failure("Mã giảm giá đã hết lượt sử dụng!");
         }
 
         if (accountId != null && promotion.getMaxUsagePerUser() != null) {
             int userUsageCount = promotionUsageRepository.countByPromotionAndAccount(
                 promotion.getId(), accountId);
             if (userUsageCount >= promotion.getMaxUsagePerUser()) {
-                return PromotionApplyResultDTO.failure("Bạn đã sử dụng hết số lần áp dụng mã này!");
+                return PromotionApplyResultDAO.failure("Bạn đã sử dụng hết số lần áp dụng mã này!");
             }
         }
 
         if (promotion.getMinOrderAmount() != null && 
             cartTotal.compareTo(promotion.getMinOrderAmount()) < 0) {
-            return PromotionApplyResultDTO.failure(
+            return PromotionApplyResultDAO.failure(
                 String.format("Đơn hàng tối thiểu phải từ %,.0f VNĐ!", promotion.getMinOrderAmount())
             );
         }
@@ -366,7 +366,7 @@ public class PromotionService {
 
         BigDecimal finalTotal = cartTotal.subtract(discount);
 
-        return PromotionApplyResultDTO.success(
+        return PromotionApplyResultDAO.success(
             promotionCode, 
             discount, 
             cartTotal, 

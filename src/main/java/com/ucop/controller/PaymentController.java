@@ -1,6 +1,6 @@
 package com.ucop.controller;
 
-import com.ucop.dto.PaymentCalculationDTO;
+import com.ucop.dao.PaymentCalculationDAO;
 import com.ucop.entity.Payment;
 import com.ucop.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,7 @@ public class PaymentController {
                                              @RequestParam String paymentMethod) {
         try {
             Payment.PaymentMethod method = Payment.PaymentMethod.valueOf(paymentMethod);
-            PaymentCalculationDTO calculation = paymentService.calculatePayment(
+            PaymentCalculationDAO calculation = paymentService.calculatePayment(
                     subtotal, itemDiscount, cartDiscount, method
             );
             return ResponseEntity.ok(calculation);

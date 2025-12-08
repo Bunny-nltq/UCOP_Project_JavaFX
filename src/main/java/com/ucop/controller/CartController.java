@@ -1,6 +1,6 @@
 package com.ucop.controller;
 
-import com.ucop.dto.CartItemDTO;
+import com.ucop.dao.CartItemDAO;
 import com.ucop.entity.Cart;
 import com.ucop.entity.Order;
 import com.ucop.service.OrderService;
@@ -40,7 +40,7 @@ public class CartController {
      * Add item to cart
      */
     @PostMapping("/{cartId}/add-item")
-    public ResponseEntity<?> addToCart(@PathVariable Long cartId, @RequestBody CartItemDTO itemDTO) {
+    public ResponseEntity<?> addToCart(@PathVariable Long cartId, @RequestBody CartItemDAO itemDTO) {
         try {
             orderService.addToCart(cartId, itemDTO);
             return ResponseEntity.ok(Map.of("message", "Item added to cart successfully"));

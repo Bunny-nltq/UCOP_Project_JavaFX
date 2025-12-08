@@ -49,8 +49,9 @@ Xem hướng dẫn chi tiết trong [SETUP_GUIDE.md](SETUP_GUIDE.md)
 - Entity: `Promotion.java`, `PromotionUsage.java`
 - Repository: `PromotionRepository.java`, `PromotionUsageRepository.java`
 - Service: `PromotionService.java`
-- Controller: `PromotionController.java`
-- DTO: `PromotionDTO.java`, `PromotionApplyResultDTO.java`
+- Controller (Admin): `admin/PromotionController.java`, `admin/PromotionFormController.java`, `admin/PromotionManagementController.java`
+- Controller (Customer): `customer/ApplyPromotionController.java`
+- DAO: `PromotionDAO.java`, `PromotionApplyResultDAO.java`
 
 ### 2. ✅ Reporting
 
@@ -65,7 +66,7 @@ Xem hướng dẫn chi tiết trong [SETUP_GUIDE.md](SETUP_GUIDE.md)
 
 **Files:**
 - Service: `ReportService.java`
-- Controller: `ReportController.java`
+- Controller (Admin): `admin/ReportViewController.java`
 
 ### 3. ✅ Dashboard UI
 
@@ -78,7 +79,8 @@ Xem hướng dẫn chi tiết trong [SETUP_GUIDE.md](SETUP_GUIDE.md)
 
 **Files:**
 - Service: `DashboardService.java`
-- Controller: `DashboardController.java`
+- Controller (Admin): `admin/DashboardController.java`
+- FXML: `UI/admin/dashboard.fxml`
 
 ### 4. ✅ Customer Frontend
 
@@ -89,7 +91,8 @@ Xem hướng dẫn chi tiết trong [SETUP_GUIDE.md](SETUP_GUIDE.md)
 - ✅ Trang áp mã giảm giá
 
 **Files:**
-- Controller: `CustomerProductController.java`, `CustomerOrderController.java`
+- Controller (Customer): `customer/CustomerProductController.java`, `customer/CustomerOrderController.java`, `customer/CustomerMainController.java`, `customer/ProductDetailController.java`
+- FXML: `UI/customer/customer-main.fxml`, `UI/customer/customer-products.fxml`, `UI/customer/customer-orders.fxml`, `UI/customer/product-detail.fxml`
 
 ### 5. ✅ Database
 
@@ -123,14 +126,25 @@ src/
 ├── main/
 │   ├── java/com/ucop/
 │   │   ├── controller/        # Controllers cho UI
-│   │   │   ├── PromotionController.java
-│   │   │   ├── DashboardController.java
-│   │   │   ├── CustomerProductController.java
-│   │   │   ├── CustomerOrderController.java
-│   │   │   └── ...
+│   │   │   ├── admin/         # Admin Controllers
+│   │   │   │   ├── PromotionController.java
+│   │   │   │   ├── PromotionFormController.java
+│   │   │   │   ├── PromotionManagementController.java
+│   │   │   │   ├── DashboardController.java
+│   │   │   │   ├── ReportViewController.java
+│   │   │   │   └── WarehouseController.java
+│   │   │   ├── customer/      # Customer Controllers
+│   │   │   │   ├── CustomerMainController.java
+│   │   │   │   ├── CustomerProductController.java
+│   │   │   │   ├── CustomerOrderController.java
+│   │   │   │   ├── ProductDetailController.java
+│   │   │   │   └── ApplyPromotionController.java
+│   │   │   ├── shared/        # Shared Controllers
+│   │   │   └── staff/         # Staff Controllers
 │   │   ├── entity/            # JPA Entities
 │   │   │   ├── Promotion.java
 │   │   │   ├── PromotionUsage.java
+│   │   │   ├── Warehouse.java
 │   │   │   └── ...
 │   │   ├── repository/        # Data Access Layer
 │   │   │   ├── PromotionRepository.java
@@ -140,16 +154,33 @@ src/
 │   │   │   ├── PromotionService.java
 │   │   │   ├── ReportService.java
 │   │   │   ├── DashboardService.java
+│   │   │   ├── WarehouseService.java
 │   │   │   └── ...
-│   │   ├── dto/               # Data Transfer Objects
-│   │   │   ├── PromotionDTO.java
-│   │   │   ├── PromotionApplyResultDTO.java
-│   │   │   └── ...
+│   │   ├── dao/               # Data Access Objects (formerly DTO)
+│   │   │   ├── PromotionDAO.java
+│   │   │   ├── PromotionApplyResultDAO.java
+│   │   │   ├── PaymentCalculationDAO.java
+│   │   │   └── CartItemDAO.java
 │   │   ├── util/              # Utility Classes
 │   │   │   ├── HibernateUtil.java
 │   │   │   └── ...
 │   │   └── MainApp.java       # Main Application
 │   └── resources/
+│       ├── UI/
+│       │   ├── admin/         # Admin FXML
+│       │   │   ├── dashboard.fxml
+│       │   │   ├── reports.fxml
+│       │   │   ├── promotion-management.fxml
+│       │   │   └── promotion-form.fxml
+│       │   ├── customer/      # Customer FXML
+│       │   │   ├── customer-main.fxml
+│       │   │   ├── customer-products.fxml
+│       │   │   ├── customer-orders.fxml
+│       │   │   ├── product-detail.fxml
+│       │   │   └── apply-promotion-dialog.fxml
+│       │   ├── share/         # Shared FXML
+│       │   └── staff/         # Staff FXML
+│       ├── style/             # CSS Styles
 │       ├── application.properties
 │       └── hibernate.cfg.xml
 └── database/
@@ -221,15 +252,15 @@ mvn clean install -DskipTests
 
 ```java
 // Create promotion
-PromotionDTO dto = new PromotionDTO();
-dto.setCode("SUMMER2024");
-dto.setDiscountType("PERCENTAGE");
-dto.setDiscountValue(new BigDecimal("15"));
+PromotionDAO dao = new PromotionDAO();
+dao.setCode("SUMMER2024");
+dao.setDiscountType("PERCENTAGE");
+dao.setDiscountValue(new BigDecimal("15"));
 // ... set other fields
-Promotion promotion = promotionService.createPromotion(dto);
+Promotion promotion = promotionService.createPromotion(dao);
 
 // Apply promotion to order
-PromotionApplyResultDTO result = promotionService.applyPromotion("SUMMER2024", order, accountId);
+PromotionApplyResultDAO result = promotionService.applyPromotion("SUMMER2024", order, accountId);
 if (result.isSuccess()) {
     System.out.println("Discount: " + result.getDiscountAmount());
 }

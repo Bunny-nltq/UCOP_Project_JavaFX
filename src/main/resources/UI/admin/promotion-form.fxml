@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.ucop.controller.admin.PromotionFormController">
+    
+    <!-- Top Bar -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: #9C27B0; -fx-padding: 15;">
+            <Button text="← Quay lại Danh sách" onAction="#handleCancel" 
+                    style="-fx-background-color: #7B1FA2; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15;">
+                <font><Font size="13"/></font>
+            </Button>
+            <Label text="🎁 Thêm/Sửa Khuyến Mãi" textFill="white">
+                <font><Font name="System Bold" size="20"/></font>
+            </Label>
+        </HBox>
+    </top>
+    
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background: #F5F5F5; -fx-background-color: #F5F5F5;">
+        <VBox spacing="10" style="-fx-padding: 15 25; -fx-alignment: CENTER;">
+            
+            <!-- Form Container với border đẹp -->
+            <VBox spacing="10" style="-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #E0E0E0; -fx-border-radius: 8; -fx-border-width: 1; -fx-padding: 18; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 8, 0, 0, 2);" maxWidth="620">
+                
+                <Label text="📋 Thông Tin Khuyến Mãi" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #9C27B0;">
+                    <padding><Insets bottom="3"/></padding>
+                </Label>
+    
+    <Separator/>
+    
+    <GridPane hgap="10" vgap="8">
+        <columnConstraints>
+            <ColumnConstraints minWidth="130" prefWidth="130"/>
+            <ColumnConstraints minWidth="350" prefWidth="420" hgrow="ALWAYS"/>
+        </columnConstraints>
+        
+        <!-- Row 0: Code -->
+        <Label text="Mã KM: *" style="-fx-font-weight: bold; -fx-text-fill: #424242; -fx-font-size: 12px;" GridPane.rowIndex="0"/>
+        <TextField fx:id="txtCode" promptText="VD: SUMMER2024" style="-fx-font-size: 12px; -fx-padding: 5;" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        
+        <!-- Row 1: Name -->
+        <Label text="Tên KM: *" style="-fx-font-weight: bold; -fx-text-fill: #424242; -fx-font-size: 12px;" GridPane.rowIndex="1"/>
+        <TextField fx:id="txtName" promptText="VD: Khuyến mãi mùa hè" style="-fx-font-size: 12px; -fx-padding: 5;" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        
+        <!-- Row 2: Description -->
+        <Label text="Mô tả:" style="-fx-font-weight: bold; -fx-text-fill: #424242; -fx-font-size: 12px;" GridPane.rowIndex="2"/>
+        <TextArea fx:id="txtDescription" promptText="Mô tả chi tiết..." prefRowCount="1" wrapText="true" style="-fx-font-size: 11px;"
+                  GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        
+        <!-- Row 3: Discount Type -->
+        <Label text="Loại giảm: *" style="-fx-font-weight: bold; -fx-text-fill: #424242; -fx-font-size: 12px;" GridPane.rowIndex="3"/>
+        <ComboBox fx:id="cboType" prefWidth="200" style="-fx-font-size: 11px;" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        
+        <!-- Row 4: Discount Value -->
+        <Label text="Giá trị giảm: *" style="-fx-font-weight: bold; -fx-text-fill: #424242; -fx-font-size: 12px;" GridPane.rowIndex="4"/>
+        <HBox spacing="8" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="4">
+            <TextField fx:id="txtValue" promptText="VD: 10" prefWidth="160" style="-fx-font-size: 11px; -fx-padding: 5;"/>
+            <Label fx:id="lblValueUnit" text="(%)" style="-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #9C27B0;"/>
+        </HBox>
+        
+        <!-- Row 5: Min Order Amount -->
+        <Label text="Đơn tối thiểu:" style="-fx-font-weight: bold; -fx-text-fill: #424242; -fx-font-size: 12px;" GridPane.rowIndex="5"/>
+        <HBox spacing="8" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="5">
+            <TextField fx:id="txtMinAmount" promptText="0" prefWidth="160" style="-fx-font-size: 11px; -fx-padding: 5;"/>
+            <Label text="VNĐ" style="-fx-font-size: 11px;"/>
+        </HBox>
+        
+        <!-- Row 6: Max Discount Amount -->
+        <Label text="Giảm tối đa:" style="-fx-font-weight: bold; -fx-text-fill: #424242; -fx-font-size: 12px;" GridPane.rowIndex="6"/>
+        <HBox spacing="8" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="6">
+            <TextField fx:id="txtMaxDiscount" promptText="Không giới hạn" prefWidth="160" style="-fx-font-size: 11px; -fx-padding: 5;"/>
+            <Label text="VNĐ" style="-fx-font-size: 11px;"/>
+        </HBox>
+        
+        <!-- Row 7: Start Date -->
+        <Label text="Ngày bắt đầu: *" style="-fx-font-weight: bold; -fx-text-fill: #424242; -fx-font-size: 12px;" GridPane.rowIndex="7"/>
+        <DatePicker fx:id="dateStart" prefWidth="200" style="-fx-font-size: 11px;" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+        
+        <!-- Row 8: End Date -->
+        <Label text="Ngày kết thúc: *" style="-fx-font-weight: bold; -fx-text-fill: #424242; -fx-font-size: 12px;" GridPane.rowIndex="8"/>
+        <DatePicker fx:id="dateEnd" prefWidth="200" style="-fx-font-size: 11px;" GridPane.columnIndex="1" GridPane.rowIndex="8"/>
+        
+        <!-- Row 9: Max Usage -->
+        <Label text="Giới hạn sử dụng:" style="-fx-font-weight: bold; -fx-text-fill: #424242; -fx-font-size: 12px;" GridPane.rowIndex="9"/>
+        <HBox spacing="8" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="9">
+            <TextField fx:id="txtMaxUsage" promptText="Không giới hạn" prefWidth="160" style="-fx-font-size: 11px; -fx-padding: 5;"/>
+            <Label text="lượt" style="-fx-font-size: 11px;"/>
+        </HBox>
+        
+        <!-- Row 10: Max Usage Per User -->
+        <Label text="Giới hạn/người:" style="-fx-font-weight: bold; -fx-text-fill: #424242; -fx-font-size: 12px;" GridPane.rowIndex="10"/>
+        <HBox spacing="8" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="10">
+            <TextField fx:id="txtMaxUsagePerUser" promptText="1" prefWidth="160" style="-fx-font-size: 11px; -fx-padding: 5;"/>
+            <Label text="lượt/người" style="-fx-font-size: 11px;"/>
+        </HBox>
+        
+        <!-- Row 11: Active -->
+        <Label text="Trạng thái:" style="-fx-font-weight: bold; -fx-text-fill: #424242; -fx-font-size: 12px;" GridPane.rowIndex="11"/>
+        <CheckBox fx:id="chkActive" text="Kích hoạt" selected="true" style="-fx-font-size: 11px; -fx-text-fill: #4CAF50; -fx-font-weight: bold;"
+                  GridPane.columnIndex="1" GridPane.rowIndex="11"/>
+        
+        <!-- Row 12: Applicable Items (if ITEM type) -->
+        <Label text="Sản phẩm áp dụng:" style="-fx-font-weight: bold; -fx-text-fill: #424242; -fx-font-size: 12px;" GridPane.rowIndex="12" fx:id="lblApplicableItems"/>
+        <TextField fx:id="txtFieldApplicableItems" promptText="ID sản phẩm, cách nhau bởi dấu phẩy" style="-fx-font-size: 11px; -fx-padding: 5;"
+                   GridPane.columnIndex="1" GridPane.rowIndex="12"/>
+    </GridPane>
+    
+    <Separator style="-fx-background-color: #E0E0E0;">
+        <padding><Insets top="3"/></padding>
+    </Separator>
+    
+    <HBox spacing="12" alignment="CENTER" style="-fx-padding: 3 0 0 0;">
+        <Button text="💾 Lưu" onAction="#handleSave" 
+                style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 8 30; -fx-background-radius: 5; -fx-cursor: hand;">
+            <font><Font size="12"/></font>
+        </Button>
+        <Button text="❌ Hủy" onAction="#handleCancel" 
+                style="-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 8 30; -fx-background-radius: 5; -fx-cursor: hand;">
+            <font><Font size="12"/></font>
+        </Button>
+    </HBox>
+    
+            </VBox>
+        
+        </VBox>
+        </ScrollPane>
+    </center>
+    
+</BorderPane>

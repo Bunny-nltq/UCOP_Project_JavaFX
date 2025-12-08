@@ -1,7 +1,7 @@
 package com.ucop.service;
 
 import com.ucop.entity.*;
-import com.ucop.dto.PaymentCalculationDTO;
+import com.ucop.dao.PaymentCalculationDAO;
 import com.ucop.repository.*;
 import com.ucop.util.PaymentCalculator;
 import java.math.BigDecimal;
@@ -28,7 +28,7 @@ public class PaymentService {
     /**
      * Calculate payment breakdown for an order
      */
-    public PaymentCalculationDTO calculatePayment(BigDecimal subtotal, 
+    public PaymentCalculationDAO calculatePayment(BigDecimal subtotal, 
                                                    BigDecimal itemDiscount,
                                                    BigDecimal cartDiscount,
                                                    Payment.PaymentMethod paymentMethod) {
@@ -57,7 +57,7 @@ public class PaymentService {
             gatewayFee = subtotal.multiply(WALLET_COMMISSION_RATE);
         }
 
-        return new PaymentCalculationDTO(
+        return new PaymentCalculationDAO(
                 subtotal,
                 itemDiscount,
                 cartDiscount,
