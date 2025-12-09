@@ -22,16 +22,20 @@ public class AdminDashboardController {
         lblAdmin.setText("Hello, " + user.getUsername());
     }
 
-    /** LOAD VIEW CHUNG */
+    /** HÀM LOAD CHUNG CHO TẤT CẢ FILE FXML */
     private void loadView(String fileName) {
         String path = "/UI/admin/" + fileName;
 
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(path));
             Parent ui = loader.load();
-            contentArea.getChildren().setAll(ui);
+
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(ui);
+
         } catch (Exception e) {
-            System.out.println("❌ Failed loading: " + path);
+            System.out.println("❌ Failed to load FXML: " + path);
+            System.out.println("➡ KIỂM TRA FILE: src/main/resources/UI/admin/" + fileName);
             e.printStackTrace();
         }
     }
@@ -42,7 +46,10 @@ public class AdminDashboardController {
     @FXML public void openConfig()         { loadView("config_manager.fxml"); }
     @FXML public void openPromotion()      { loadView("promotion_manager.fxml"); }
     @FXML public void openReports()        { loadView("report_manager.fxml"); }
-    @FXML public void openAudit()          { loadView("audit_manager.fxml"); }
+
+    /** FIX TÊN FILE AUDIT LOG — phải trùng EXACT FILE NAME */
+    @FXML public void openAudit()          { loadView("auditLog_manager.fxml"); }
+
     @FXML public void openChangePassword() { loadView("change_password.fxml"); }
 
     // ---------------- LOGOUT ----------------

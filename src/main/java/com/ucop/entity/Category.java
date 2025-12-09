@@ -1,42 +1,58 @@
 package com.ucop.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "categories")
-public class Category {
+@Table(name = "category")
+public class Category extends BaseAuditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    // Quan hệ đa cấp Category → Category
+    @ManyToOne
     @JoinColumn(name = "parent_id")
     private Category parent;
 
-    @OneToMany(mappedBy = "category")
-    private List<Item> items;
+    @OneToMany(mappedBy = "parent")
+    private List<Category> children;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    // ===== GETTERS & SETTERS =====
 
-    @PrePersist
-    public void pre() { createdAt = LocalDateTime.now(); }
+    public Integer getId() {
+        return id;
+    }
 
-    @PreUpdate
-    public void upd() { updatedAt = LocalDateTime.now(); }
+    public void setId(Integer id) {  // Bạn cần setter này để tạo copy khi audit log
+        this.id = id;
+    }
 
-    // GETTER & SETTER
-    public Integer getId() { return id; }
+    public String getName() {
+        return name;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public Category getParent() { return parent; }
-    public void setParent(Category parent) { this.parent = parent; }
+    public Category getParent() {
+        return parent;
+    }
+
+    public void setParent(Category parent) {
+        this.parent = parent;
+    }
+
+    public List<Category> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<Category> children) {
+        this.children = children;
+    }
 }

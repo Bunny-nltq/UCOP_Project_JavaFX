@@ -32,12 +32,46 @@ public class User {
     )
     private Set<Role> roles = new HashSet<>();
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.EAGER)
     private AccountProfile profile;
 
     public User() {}
 
-    // ===== GETTER & SETTER =====
+    // ==========================
+    // PROFILE HANDLING (SAFE)
+    // ==========================
+    public AccountProfile getProfile() {
+        return profile;
+    }
+
+    public void setProfile(AccountProfile profile) {
+        this.profile = profile;
+
+        // tránh vòng lặp vô hạn
+        if (profile != null && profile.getUser() != this) {
+            profile.setUser(this);
+        }
+    }
+
+    // ==========================
+    // ROLE HELPERS
+    // ==========================
+    public void addRole(Role role) {
+        if (role != null) {
+            this.roles.add(role);
+        }
+    }
+
+    public void clearRoles() {
+        this.roles.clear();
+    }
+
+    // ==========================
+    // GETTERS / SETTERS
+    // ==========================
     public Integer getId() { return id; }
 
     public String getUsername() { return username; }
@@ -58,6 +92,19 @@ public class User {
     public Set<Role> getRoles() { return roles; }
     public void setRoles(Set<Role> roles) { this.roles = roles; }
 
-    public AccountProfile getProfile() { return profile; }
-    public void setProfile(AccountProfile profile) { this.profile = profile; }
+    // ==========================
+    // OVERRIDES (QUAN TRỌNG)
+    // ==========================
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
+        User u = (User) o;
+        return id != null && id.equals(u.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

@@ -9,11 +9,11 @@ public class RoleService {
 
     private final RoleDAO dao = new RoleDAO();
 
-    public List<Role> findAll(){
+    public List<Role> findAll() {
         return dao.findAll();
     }
 
-    public void save(Role r){
-        dao.save(r);
+    public Role findByName(String name) {
+        return dao.findByName(name);
     }
 }

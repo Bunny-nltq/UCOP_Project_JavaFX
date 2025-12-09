@@ -26,7 +26,6 @@ public class RegisterController {
     public void handleRegister(ActionEvent e){
         try {
 
-            // VALIDATION
             if (txtUsername.getText().isEmpty() ||
                 txtPassword.getText().isEmpty() ||
                 txtConfirm.getText().isEmpty() ||
@@ -41,30 +40,25 @@ public class RegisterController {
                 return;
             }
 
-            // Kiểm tra tài khoản đã tồn tại
             if (userService.findByUsernameOrEmail(txtUsername.getText()) != null) {
                 lblMsg.setText("Username đã tồn tại!");
                 return;
             }
 
-            // Tạo user mới
             User u = new User();
             u.setUsername(txtUsername.getText());
             u.setPassword(HashUtil.sha256(txtPassword.getText()));
             u.setEmail(txtEmail.getText());
+            u.setActive(true);
 
-            // Gán ROLE CUSTOMER
-            Role customer = roleService.findAll().stream()
-                    .filter(r -> r.getName().equalsIgnoreCase("CUSTOMER"))
-                    .findFirst()
-                    .orElse(null);
-
+            // GÁN ROLE CUSTOMER MẶC ĐỊNH
+            Role customer = roleService.findByName("CUSTOMER");
             if (customer != null) {
                 u.getRoles().add(customer);
             }
 
-            // Lưu DB
             userService.save(u);
+
             lblMsg.setStyle("-fx-text-fill: green;");
             lblMsg.setText("Đăng ký thành công!");
 

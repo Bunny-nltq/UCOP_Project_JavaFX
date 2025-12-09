@@ -4,30 +4,48 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "audit_logs")
+@Table(name = "audit_log")
 public class AuditLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
-    private String entityType;
-    private String entityId;
+    private String entityName;
+    private Long entityId;
     private String action;
-    private String changes;
-    private String createdBy;
 
-    private LocalDateTime createdAt;
+    @Column(columnDefinition = "TEXT")
+    private String oldValue;
 
-    @PrePersist
-    public void pre() { createdAt = LocalDateTime.now(); }
+    @Column(columnDefinition = "TEXT")
+    private String newValue;
 
-    // GETTER & SETTER
-    public Integer getId() { return id; }
+    private String actor;
+    private LocalDateTime timestamp;
 
-    public void setEntityType(String entityType) { this.entityType = entityType; }
-    public void setEntityId(String entityId) { this.entityId = entityId; }
+    // ===== GETTERS + SETTERS =====
+
+    public Long getId() { return id; }
+
+    public String getEntityName() { return entityName; }
+    public void setEntityName(String entityName) { this.entityName = entityName; }
+
+    public Long getEntityId() { return entityId; }
+    public void setEntityId(Long entityId) { this.entityId = entityId; }
+
+    public String getAction() { return action; }
     public void setAction(String action) { this.action = action; }
-    public void setChanges(String changes) { this.changes = changes; }
-    public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
+
+    public String getOldValue() { return oldValue; }
+    public void setOldValue(String oldValue) { this.oldValue = oldValue; }
+
+    public String getNewValue() { return newValue; }
+    public void setNewValue(String newValue) { this.newValue = newValue; }
+
+    public String getActor() { return actor; }
+    public void setActor(String actor) { this.actor = actor; }
+
+    public LocalDateTime getTimestamp() { return timestamp; }
+    public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
 }

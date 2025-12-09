@@ -6,19 +6,19 @@ import jakarta.persistence.*;
 @Table(name = "account_profile")
 public class AccountProfile {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
+    @OneToOne(optional = false)
+    @JoinColumn(name = "user_id", unique = true)
     private User user;
 
     @Column(name="full_name")
     private String fullName;
 
     private String phone;
-
     private String address;
 
     @Column(name="avatar_url")
