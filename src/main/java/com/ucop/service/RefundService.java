@@ -84,7 +84,8 @@ public class RefundService {
         }
 
         refund.setUpdatedAt(LocalDateTime.now());
-        return refundRepository.update(refund);
+        refundRepository.update(refund);
+        return refund;
     }
 
     /**

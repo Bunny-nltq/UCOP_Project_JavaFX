@@ -13,5 +13,5 @@ public interface PaymentRepository {
     List<Payment> findByStatus(String status);
     List<Payment> findAll();
     void delete(Long id);
-    Payment update(Payment payment);
+    void update(Payment payment);
 }

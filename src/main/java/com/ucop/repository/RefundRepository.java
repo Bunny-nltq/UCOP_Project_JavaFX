@@ -12,5 +12,5 @@ public interface RefundRepository {
     List<Refund> findByStatus(String status);
     List<Refund> findAll();
     void delete(Long id);
-    Refund update(Refund refund);
+    void update(Refund refund);
 }
