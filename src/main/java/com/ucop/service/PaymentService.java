@@ -106,8 +106,7 @@ public class PaymentService {
         }
 
         payment.setUpdatedAt(LocalDateTime.now());
-        paymentRepository.update(payment);
-        return payment;
+        return paymentRepository.update(payment);
     }
 
     /**
