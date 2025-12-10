@@ -16,7 +16,7 @@ public class OrderNumberGenerator {
         LocalDateTime now = LocalDateTime.now();
         String datePart = now.format(formatter);
         String randomPart = UUID.randomUUID().toString().substring(0, 5).toUpperCase();
-        return String.format("%s-%s-%s", PREFIX, datePart, randomPart);
+        return "%s-%s-%s".formatted(PREFIX, datePart, randomPart);
     }
 
     /**
@@ -26,7 +26,7 @@ public class OrderNumberGenerator {
         LocalDateTime now = LocalDateTime.now();
         String datePart = now.format(formatter);
         String randomPart = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        return String.format("TRK-%s-%s", datePart, randomPart);
+        return "TRK-%s-%s".formatted(datePart, randomPart);
     }
 
     /**
@@ -36,6 +36,6 @@ public class OrderNumberGenerator {
         LocalDateTime now = LocalDateTime.now();
         String datePart = now.format(formatter);
         String randomPart = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-        return String.format("APT-%s-%s", datePart, randomPart);
+        return "APT-%s-%s".formatted(datePart, randomPart);
     }
 }

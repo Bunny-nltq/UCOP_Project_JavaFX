@@ -5,6 +5,7 @@ import com.ucop.repository.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Service for refund processing
@@ -77,7 +78,8 @@ public class RefundService {
         }
 
         refund.setUpdatedAt(LocalDateTime.now());
-        return refundRepository.update(refund);
+        refundRepository.update(refund);
+        return refund;
     }
 
     /**
@@ -116,6 +118,6 @@ public class RefundService {
      * Generate unique refund transaction ID
      */
     private String generateRefundTransactionId() {
-        return "REFUND-" + System.currentTimeMillis() + "-" + (int)(Math.random() * 10000);
+        return "REFUND-" + System.currentTimeMillis() + "-" + (int)(ThreadLocalRandom.current().nextDouble() * 10000);
     }
 }

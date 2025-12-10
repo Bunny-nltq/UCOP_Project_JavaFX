@@ -7,6 +7,7 @@ import com.ucop.util.PaymentCalculator;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Service for payment processing and calculation
@@ -105,7 +106,8 @@ public class PaymentService {
         }
 
         payment.setUpdatedAt(LocalDateTime.now());
-        return paymentRepository.update(payment);
+        paymentRepository.update(payment);
+        return payment;
     }
 
     /**
@@ -148,6 +150,6 @@ public class PaymentService {
      * Generate unique transaction ID
      */
     private String generateTransactionId() {
-        return "TXN-" + System.currentTimeMillis() + "-" + (int)(Math.random() * 10000);
+        return "TXN-" + System.currentTimeMillis() + "-" + (int)(ThreadLocalRandom.current().nextDouble() * 10000);
     }
 }
