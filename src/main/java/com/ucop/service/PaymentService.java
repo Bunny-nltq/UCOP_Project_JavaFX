@@ -1,13 +1,18 @@
 package com.ucop.service;
 
-import com.ucop.entity.*;
-import com.ucop.dto.PaymentCalculationDTO;
-import com.ucop.repository.*;
-import com.ucop.util.PaymentCalculator;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
+
+import com.ucop.dto.PaymentCalculationDTO;
+import com.ucop.entity.Order;
+import com.ucop.entity.Payment;
+import com.ucop.repository.OrderRepository;
+import com.ucop.repository.PaymentRepository;
+import com.ucop.repository.RefundRepository;
+import com.ucop.util.PaymentCalculator;
 
 /**
  * Service for payment processing and calculation
@@ -106,7 +111,8 @@ public class PaymentService {
         }
 
         payment.setUpdatedAt(LocalDateTime.now());
-        return paymentRepository.update(payment);
+        paymentRepository.update(payment);
+        return payment;
     }
 
     /**

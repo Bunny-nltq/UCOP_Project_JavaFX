@@ -1,11 +1,17 @@
 package com.ucop.service;
 
-import com.ucop.entity.*;
-import com.ucop.repository.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
+
+import com.ucop.entity.Order;
+import com.ucop.entity.Payment;
+import com.ucop.entity.Refund;
+import com.ucop.repository.OrderRepository;
+import com.ucop.repository.PaymentRepository;
+import com.ucop.repository.RefundRepository;
 
 /**
  * Service for refund processing
@@ -78,7 +84,8 @@ public class RefundService {
         }
 
         refund.setUpdatedAt(LocalDateTime.now());
-        return refundRepository.update(refund);
+        refundRepository.update(refund);
+        return refund;
     }
 
     /**

@@ -1,8 +1,9 @@
 package com.ucop.repository;
 
-import com.ucop.entity.Payment;
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
+
+import com.ucop.entity.Payment;
 
 public interface PaymentRepository {
     Payment save(Payment payment);
@@ -12,5 +13,5 @@ public interface PaymentRepository {
     List<Payment> findByStatus(String status);
     List<Payment> findAll();
     void delete(Long id);
-    Payment update(Payment payment);
+    void update(Payment payment);
 }
