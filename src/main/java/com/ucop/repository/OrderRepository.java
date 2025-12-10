@@ -12,5 +12,5 @@ public interface OrderRepository {
     List<Order> findByStatus(String status);
     List<Order> findAll();
     void delete(Long id);
-    void update(Order order);
+    Order update(Order order);
 }
