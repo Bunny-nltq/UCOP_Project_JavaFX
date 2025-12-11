@@ -16,7 +16,7 @@ public class StaffDashboardController {
 
     private User staff;
 
-    /** Hàm nhận user từ LoginController */
+    /** Nhận user từ LoginController */
     public void setStaff(User user) {
         this.staff = user;
         if (lblStaff != null) {
@@ -24,6 +24,7 @@ public class StaffDashboardController {
         }
     }
 
+    /** Generic loader for staff UI pages */
     private void loadView(String fileName) {
         String path = "/UI/staff/" + fileName;
 
@@ -31,6 +32,7 @@ public class StaffDashboardController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(path));
             Parent ui = loader.load();
             contentArea.getChildren().setAll(ui);
+
         } catch (Exception e) {
             System.out.println("❌ Cannot load: " + path);
             e.printStackTrace();
@@ -45,6 +47,35 @@ public class StaffDashboardController {
     @FXML public void openPayments()   { loadView("staff_payments.fxml"); }
     @FXML public void openShipment()   { loadView("staff_shipment.fxml"); }
     @FXML public void openRefunds()    { loadView("staff_refund.fxml"); }
+
+    // ============ NEW: CATEGORY & ITEM MANAGEMENT ============
+
+    /** Mở giao diện quản lý danh mục */
+    @FXML
+    public void openCategoryManager() {
+        loadAdminModule("category_manager.fxml");
+    }
+
+    /** Mở giao diện quản lý sản phẩm */
+    @FXML
+    public void openItemManager() {
+        loadAdminModule("items_manager.fxml");
+    }
+
+    /** Load các FXML của admin (vì category & items nằm trong thư mục admin) */
+    private void loadAdminModule(String fileName) {
+        String path = "/UI/staff/" + fileName;
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(path));
+            Parent ui = loader.load();
+            contentArea.getChildren().setAll(ui);
+
+        } catch (Exception e) {
+            System.out.println("❌ Cannot load staff module: " + path);
+            e.printStackTrace();
+        }
+    }
 
     // ================= LOGOUT ==================
     @FXML

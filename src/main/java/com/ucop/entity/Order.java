@@ -1,17 +1,9 @@
 package com.ucop.entity;
 
-
-
 import jakarta.persistence.*;
-
-import jakarta.validation.constraints.NotNull;
-
 import java.math.BigDecimal;
-
 import java.time.LocalDateTime;
-
 import java.util.HashSet;
-
 import java.util.Set;
 
 
@@ -28,25 +20,15 @@ public class Order {
 
     private Long id;
 
-
-
-    @NotNull
-
     @Column(name = "account_id", nullable = false)
 
     private Long accountId;
-
-
-
-    @NotNull
 
     @Column(name = "status", nullable = false, length = 50)
 
     @Enumerated(EnumType.STRING)
 
     private OrderStatus status = OrderStatus.CART;
-
-
 
     @Column(name = "order_number", unique = true, length = 50)
 

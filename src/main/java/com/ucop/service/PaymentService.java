@@ -4,17 +4,17 @@ import com.ucop.entity.*;
 import com.ucop.dao.PaymentCalculationDAO;
 import com.ucop.repository.*;
 import com.ucop.util.PaymentCalculator;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
-/**
- * Service for payment processing and calculation
- */
 public class PaymentService {
+
     private final PaymentRepository paymentRepository;
     private final RefundRepository refundRepository;
     private final OrderRepository orderRepository;
+
     private static final BigDecimal WALLET_COMMISSION_RATE = new BigDecimal("0.01"); // 1%
 
     public PaymentService(PaymentRepository paymentRepository,
@@ -26,35 +26,31 @@ public class PaymentService {
     }
 
     /**
-     * Calculate payment breakdown for an order
+     * Calculate payment breakdown
      */
-    public PaymentCalculationDAO calculatePayment(BigDecimal subtotal, 
-                                                   BigDecimal itemDiscount,
-                                                   BigDecimal cartDiscount,
-                                                   Payment.PaymentMethod paymentMethod) {
+    public PaymentCalculationDAO calculatePayment(BigDecimal subtotal,
+                                                  BigDecimal itemDiscount,
+                                                  BigDecimal cartDiscount,
+                                                  Payment.PaymentMethod paymentMethod) {
+
         if (subtotal == null || subtotal.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Subtotal must be greater than zero");
         }
 
-        // Ensure discounts are valid
         if (itemDiscount == null) itemDiscount = BigDecimal.ZERO;
         if (cartDiscount == null) cartDiscount = BigDecimal.ZERO;
 
-        // Calculate individual components
         BigDecimal taxAmount = PaymentCalculator.calculateTax(subtotal);
         BigDecimal shippingFee = PaymentCalculator.calculateShippingFee(subtotal);
-        
+
         BigDecimal codFee = BigDecimal.ZERO;
         BigDecimal gatewayFee = BigDecimal.ZERO;
 
-        // Calculate method-specific fees
-        if (paymentMethod == Payment.PaymentMethod.COD) {
-            codFee = PaymentCalculator.calculateCODFee(subtotal);
-        } else if (paymentMethod == Payment.PaymentMethod.GATEWAY) {
-            gatewayFee = PaymentCalculator.calculateGatewayFee(subtotal);
-        } else if (paymentMethod == Payment.PaymentMethod.WALLET) {
-            // Wallet has commission
-            gatewayFee = subtotal.multiply(WALLET_COMMISSION_RATE);
+        switch (paymentMethod) {
+            case COD -> codFee = PaymentCalculator.calculateCODFee(subtotal);
+            case GATEWAY -> gatewayFee = PaymentCalculator.calculateGatewayFee(subtotal);
+            case WALLET -> gatewayFee = subtotal.multiply(WALLET_COMMISSION_RATE);
+            default -> {}
         }
 
         return new PaymentCalculationDAO(
@@ -69,33 +65,27 @@ public class PaymentService {
     }
 
     /**
-     * Create payment for order
+     * Create a payment for an order
      */
     public Payment createPayment(Long orderId, Payment.PaymentMethod method, BigDecimal amount) {
-        Optional<Order> orderOpt = orderRepository.findById(orderId);
-        if (orderOpt.isEmpty()) {
-            throw new IllegalArgumentException("Order not found");
-        }
 
-        Order order = orderOpt.get();
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
         Payment payment = new Payment(order, method, amount);
-        payment.setStatus(Payment.PaymentStatus.PENDING);
-        payment.setCreatedAt(LocalDateTime.now());
+        payment.setStatus(Payment.PaymentStatus.PENDING); // ok
 
         return paymentRepository.save(payment);
     }
 
     /**
-     * Process payment (simulate gateway processing)
+     * Process payment (simulate gateway)
      */
     public Payment processPayment(Long paymentId, boolean success) {
-        Optional<Payment> paymentOpt = paymentRepository.findById(paymentId);
-        if (paymentOpt.isEmpty()) {
-            throw new IllegalArgumentException("Payment not found");
-        }
 
-        Payment payment = paymentOpt.get();
-        
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new IllegalArgumentException("Payment not found"));
+
         if (success) {
             payment.setStatus(Payment.PaymentStatus.SUCCESS);
             payment.setPaidAt(LocalDateTime.now());
@@ -104,7 +94,6 @@ public class PaymentService {
             payment.setStatus(Payment.PaymentStatus.FAILED);
         }
 
-        payment.setUpdatedAt(LocalDateTime.now());
         paymentRepository.update(payment);
         return payment;
     }
@@ -113,34 +102,22 @@ public class PaymentService {
      * Update payment status
      */
     public void updatePaymentStatus(Long paymentId, Payment.PaymentStatus status) {
-        Optional<Payment> paymentOpt = paymentRepository.findById(paymentId);
-        if (paymentOpt.isEmpty()) {
-            throw new IllegalArgumentException("Payment not found");
-        }
 
-        Payment payment = paymentOpt.get();
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new IllegalArgumentException("Payment not found"));
+
         payment.setStatus(status);
-        payment.setUpdatedAt(LocalDateTime.now());
         paymentRepository.update(payment);
     }
 
-    /**
-     * Get payment by ID
-     */
     public Optional<Payment> getPaymentById(Long paymentId) {
         return paymentRepository.findById(paymentId);
     }
 
-    /**
-     * Get payments for order
-     */
     public List<Payment> getPaymentsByOrderId(Long orderId) {
         return paymentRepository.findByOrderId(orderId);
     }
 
-    /**
-     * Get payments by status
-     */
     public List<Payment> getPaymentsByStatus(Payment.PaymentStatus status) {
         return paymentRepository.findByStatus(status.name());
     }

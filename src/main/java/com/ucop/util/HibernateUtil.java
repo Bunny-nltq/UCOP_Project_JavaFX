@@ -1,51 +1,38 @@
 package com.ucop.util;
 
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
-<<<<<<< HEAD
 public class HibernateUtil {
 
-    private static final SessionFactory FACTORY = buildFactory();
+    private static final SessionFactory SESSION_FACTORY = buildSessionFactory();
 
-    private static SessionFactory buildFactory() {
+    private static SessionFactory buildSessionFactory() {
         try {
-            return new Configuration().configure().buildSessionFactory();
-        } catch (Exception e) {
-            System.err.println("Lỗi Hibernate: " + e);
-            throw new ExceptionInInitializerError(e);
-        }
-    }
+            // Load cấu hình từ hibernate.cfg.xml
+            StandardServiceRegistry registry =
+                    new StandardServiceRegistryBuilder()
+                            .configure("hibernate.cfg.xml")
+                            .build();
 
-    public static SessionFactory getSessionFactory() {
-        return FACTORY;
-=======
-/**
- * Hibernate Utility class with a convenient method to get Session Factory object.
- */
-public class HibernateUtil {
-    
-    private static final SessionFactory sessionFactory;
-    
-    static {
-        try {
-            // Create the SessionFactory from hibernate.cfg.xml
-            sessionFactory = new Configuration()
-                    .configure("hibernate.cfg.xml")
-                    .buildSessionFactory();
-        } catch (Throwable ex) {
-            System.err.println("Initial SessionFactory creation failed: " + ex);
+            Metadata metadata = new MetadataSources(registry).buildMetadata();
+
+            return metadata.buildSessionFactory();
+
+        } catch (Exception ex) {
+            System.err.println("❌ Lỗi khởi tạo Hibernate SessionFactory: " + ex);
             throw new ExceptionInInitializerError(ex);
         }
     }
-    
+
     public static SessionFactory getSessionFactory() {
-        return sessionFactory;
+        return SESSION_FACTORY;
     }
-    
+
     public static void shutdown() {
-        // Close caches and connection pools
         getSessionFactory().close();
->>>>>>> 2a175e765846e2f7188e4b187353a76c1e1fb3dc
     }
 }

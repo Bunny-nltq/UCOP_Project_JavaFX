@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.ucop.controller.staff.ItemController">
+
+    <top>
+        <VBox spacing="10">
+            <padding><Insets top="15" right="15" bottom="15" left="15"/></padding>
+
+            <Label text="Item Manager"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+
+            <GridPane hgap="10" vgap="10">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="25"/>
+                    <ColumnConstraints percentWidth="75"/>
+                </columnConstraints>
+
+                <Label text="SKU:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtSku" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                <Label text="Name:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtName" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                <Label text="Description:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtDescription" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                <Label text="Unit:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtUnit" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                <Label text="Weight (kg):" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtWeight" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                <Label text="Price:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtPrice" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+                <Label text="Stock:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtStock" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+                <Label text="Image URL:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtImageUrl" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+
+                <Label text="Category:" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+                <ComboBox fx:id="cbCategory" prefWidth="200"
+                          GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+            </GridPane>
+
+            <HBox spacing="10">
+                <Button text="Add" onAction="#add"/>
+                <Button text="Update" onAction="#update"/>
+                <Button text="Delete" onAction="#delete"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <TableView fx:id="tbl">
+            <columns>
+                <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
+                <TableColumn fx:id="colSku" text="SKU" prefWidth="120"/>
+                <TableColumn fx:id="colName" text="Name" prefWidth="200"/>
+                <TableColumn fx:id="colDescription" text="Description" prefWidth="200"/>
+                <TableColumn fx:id="colUnit" text="Unit" prefWidth="100"/>
+                <TableColumn fx:id="colWeight" text="Weight" prefWidth="100"/>
+                <TableColumn fx:id="colPrice" text="Price" prefWidth="120"/>
+                <TableColumn fx:id="colStock" text="Stock" prefWidth="80"/>
+                <TableColumn fx:id="colStatus" text="Status" prefWidth="80"/>
+                <TableColumn fx:id="colImageUrl" text="Image URL" prefWidth="180"/>
+                <TableColumn fx:id="colCategory" text="Category" prefWidth="150"/>
+                <TableColumn fx:id="colCreatedAt" text="Created At" prefWidth="150"/>
+                <TableColumn fx:id="colUpdatedAt" text="Updated At" prefWidth="150"/>
+            </columns>
+        </TableView>
+    </center>
+
+</BorderPane>

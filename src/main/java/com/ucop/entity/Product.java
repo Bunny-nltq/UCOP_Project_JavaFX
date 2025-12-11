@@ -1,19 +1,17 @@
 package com.ucop.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "products")
 public class Product {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
     @Column(name = "name", nullable = false, length = 200)
     private String name;
 
@@ -23,8 +21,6 @@ public class Product {
     @Column(name = "category", length = 100)
     private String category;
 
-    @NotNull
-    @Min(0)
     @Column(name = "price", nullable = false, precision = 19, scale = 4)
     private BigDecimal price;
 
@@ -37,12 +33,14 @@ public class Product {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+
+    // Auto timestamp
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -54,9 +52,9 @@ public class Product {
         updatedAt = LocalDateTime.now();
     }
 
+
     // Constructors
-    public Product() {
-    }
+    public Product() {}
 
     public Product(Long id, String name, String category, BigDecimal price) {
         this.id = id;
@@ -72,87 +70,49 @@ public class Product {
         this.price = price;
     }
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    // Getters & Setters
 
-    public String getName() {
-        return name;
-    }
+    public Long getId() { return id; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public void setId(Long id) { this.id = id; }
 
-    public String getDescription() {
-        return description;
-    }
+    public String getName() { return name; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public void setName(String name) { this.name = name; }
 
-    public String getCategory() {
-        return category;
-    }
+    public String getDescription() { return description; }
 
-    public void setCategory(String category) {
-        this.category = category;
-    }
+    public void setDescription(String description) { this.description = description; }
 
-    public BigDecimal getPrice() {
-        return price;
-    }
+    public String getCategory() { return category; }
 
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
+    public void setCategory(String category) { this.category = category; }
 
-    public String getImageUrl() {
-        return imageUrl;
-    }
+    public BigDecimal getPrice() { return price; }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
+    public void setPrice(BigDecimal price) { this.price = price; }
 
-    public Long getStockQuantity() {
-        return stockQuantity;
-    }
+    public String getImageUrl() { return imageUrl; }
 
-    public void setStockQuantity(Long stockQuantity) {
-        this.stockQuantity = stockQuantity;
-    }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public Boolean getIsActive() {
-        return isActive;
-    }
+    public Long getStockQuantity() { return stockQuantity; }
 
-    public void setIsActive(Boolean isActive) {
-        this.isActive = isActive;
-    }
+    public void setStockQuantity(Long stockQuantity) { this.stockQuantity = stockQuantity; }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
+    public Boolean getIsActive() { return isActive; }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
+    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
 
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+
+    // Business logic
     public boolean isInStock() {
         return stockQuantity != null && stockQuantity > 0;
     }

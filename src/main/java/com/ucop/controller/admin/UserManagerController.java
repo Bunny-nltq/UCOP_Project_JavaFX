@@ -25,7 +25,7 @@ public class UserManagerController {
     @FXML private TableColumn<User, String> colPhone;
     @FXML private TableColumn<User, String> colAddress;
 
-    // ===== FORM FIELD =====
+    // FORM FIELD
     @FXML private TextField txtUsername;
     @FXML private TextField txtEmail;
 
@@ -43,6 +43,7 @@ public class UserManagerController {
     private ObservableList<User> users;
     private User selectedUser = null;
 
+    // ================= INITIALIZE =================
     @FXML
     public void initialize() {
         loadRoles();
@@ -78,56 +79,43 @@ public class UserManagerController {
         });
     }
 
+    // ================= LOAD ROLES =================
     private void loadRoles() {
         cbRole.setItems(FXCollections.observableArrayList(roleService.findAll()));
     }
 
+    // ================= LOAD USERS INTO TABLE =================
     private void loadUsers() {
         users = FXCollections.observableArrayList(userService.findAll());
         tblUsers.setItems(users);
 
-        colId.setCellValueFactory(param ->
-                new javafx.beans.property.SimpleIntegerProperty(param.getValue().getId()).asObject()
-        );
-
-        colUsername.setCellValueFactory(param ->
-                new javafx.beans.property.SimpleStringProperty(param.getValue().getUsername())
-        );
-
-        colEmail.setCellValueFactory(param ->
-                new javafx.beans.property.SimpleStringProperty(param.getValue().getEmail())
-        );
-
-        colActive.setCellValueFactory(param ->
-                new javafx.beans.property.SimpleBooleanProperty(param.getValue().isActive()).asObject()
-        );
+        colId.setCellValueFactory(param -> new javafx.beans.property.SimpleIntegerProperty(param.getValue().getId()).asObject());
+        colUsername.setCellValueFactory(param -> new javafx.beans.property.SimpleStringProperty(param.getValue().getUsername()));
+        colEmail.setCellValueFactory(param -> new javafx.beans.property.SimpleStringProperty(param.getValue().getEmail()));
+        colActive.setCellValueFactory(param -> new javafx.beans.property.SimpleBooleanProperty(param.getValue().isActive()).asObject());
 
         colRole.setCellValueFactory(param -> {
             if (!param.getValue().getRoles().isEmpty()) {
-                Role r = param.getValue().getRoles().iterator().next();
-                return new javafx.beans.property.SimpleStringProperty(r.getName());
+                return new javafx.beans.property.SimpleStringProperty(param.getValue().getRoles().iterator().next().getName());
             }
             return new javafx.beans.property.SimpleStringProperty("CUSTOMER");
         });
 
         colFullName.setCellValueFactory(param ->
                 new javafx.beans.property.SimpleStringProperty(
-                        param.getValue().getProfile() != null ?
-                                param.getValue().getProfile().getFullName() : ""
+                        param.getValue().getProfile() != null ? param.getValue().getProfile().getFullName() : ""
                 )
         );
 
         colPhone.setCellValueFactory(param ->
                 new javafx.beans.property.SimpleStringProperty(
-                        param.getValue().getProfile() != null ?
-                                param.getValue().getProfile().getPhone() : ""
+                        param.getValue().getProfile() != null ? param.getValue().getProfile().getPhone() : ""
                 )
         );
 
         colAddress.setCellValueFactory(param ->
                 new javafx.beans.property.SimpleStringProperty(
-                        param.getValue().getProfile() != null ?
-                                param.getValue().getProfile().getAddress() : ""
+                        param.getValue().getProfile() != null ? param.getValue().getProfile().getAddress() : ""
                 )
         );
     }
@@ -137,22 +125,19 @@ public class UserManagerController {
     public void handleAdd() {
         try {
             User u = new User();
+
             u.setUsername(txtUsername.getText());
             u.setEmail(txtEmail.getText());
             u.setActive(chkActive.isSelected());
 
-            // default password = 123456
-            u.setPassword(HashUtil.sha256("123456"));
+            u.setPassword(HashUtil.sha256("123456")); // default pass
 
-            // DEFAULT ROLE = CUSTOMER if user does not choose
             Role role = cbRole.getValue();
             if (role == null) {
                 role = roleService.findByName("CUSTOMER");
             }
-
             u.getRoles().add(role);
 
-            // Create profile
             AccountProfile profile = new AccountProfile();
             profile.setUser(u);
             profile.setFullName(txtFullName.getText());
@@ -162,9 +147,10 @@ public class UserManagerController {
             u.setProfile(profile);
 
             userService.save(u);
+            lblMsg.setText("User added!");
 
-            lblMsg.setText("User added successfully!");
             loadUsers();
+            tblUsers.refresh();
 
         } catch (Exception ex) {
             lblMsg.setText("Error adding user!");
@@ -185,15 +171,13 @@ public class UserManagerController {
             selectedUser.setEmail(txtEmail.getText());
             selectedUser.setActive(chkActive.isSelected());
 
-            // ROLE UPDATE
             selectedUser.getRoles().clear();
             if (cbRole.getValue() != null) {
                 selectedUser.getRoles().add(cbRole.getValue());
             }
 
-            // PROFILE FIX — create profile if missing
             AccountProfile p = selectedUser.getProfile();
-            if (p == null) {  
+            if (p == null) {
                 p = new AccountProfile();
                 p.setUser(selectedUser);
                 selectedUser.setProfile(p);
@@ -207,7 +191,12 @@ public class UserManagerController {
 
             lblMsg.setText("User updated!");
 
+            // refresh đúng cách
             loadUsers();
+            tblUsers.refresh();
+
+            // giữ lại selection
+            tblUsers.getSelectionModel().select(selectedUser);
 
         } catch (Exception ex) {
             lblMsg.setText("Error updating user!");
@@ -228,6 +217,7 @@ public class UserManagerController {
             userService.delete(selectedUser.getId());
             lblMsg.setText("User deleted!");
             loadUsers();
+            tblUsers.refresh();
 
         } catch (Exception ex) {
             lblMsg.setText("Error deleting user!");

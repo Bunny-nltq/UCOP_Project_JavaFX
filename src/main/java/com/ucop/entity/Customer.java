@@ -1,8 +1,6 @@
 package com.ucop.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Entity
@@ -12,15 +10,12 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
     @Column(name = "account_id", nullable = false, unique = true)
     private Long accountId;
 
-    @NotNull
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
-    @Email
     @Column(name = "email", length = 100)
     private String email;
 

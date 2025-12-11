@@ -11,41 +11,54 @@ public class AuditLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String entityName;
-    private Long entityId;
+    @Column(name = "user_id")
+    private Long userId;
+
     private String action;
 
     @Column(columnDefinition = "TEXT")
-    private String oldValue;
+    private String details;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "entity_id")
+    private Long entityId;
+
+    @Column(name = "entity_name")
+    private String entityName;
+
+    @Column(columnDefinition = "TEXT", name = "new_value")
     private String newValue;
 
-    private String actor;
-    private LocalDateTime timestamp;
+    @Column(columnDefinition = "TEXT", name = "old_value")
+    private String oldValue;
 
-    // ===== GETTERS + SETTERS =====
 
+    // GETTERS + SETTERS
     public Long getId() { return id; }
 
-    public String getEntityName() { return entityName; }
-    public void setEntityName(String entityName) { this.entityName = entityName; }
-
-    public Long getEntityId() { return entityId; }
-    public void setEntityId(Long entityId) { this.entityId = entityId; }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
     public String getAction() { return action; }
     public void setAction(String action) { this.action = action; }
 
-    public String getOldValue() { return oldValue; }
-    public void setOldValue(String oldValue) { this.oldValue = oldValue; }
+    public String getDetails() { return details; }
+    public void setDetails(String details) { this.details = details; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public Long getEntityId() { return entityId; }
+    public void setEntityId(Long entityId) { this.entityId = entityId; }
+
+    public String getEntityName() { return entityName; }
+    public void setEntityName(String entityName) { this.entityName = entityName; }
 
     public String getNewValue() { return newValue; }
     public void setNewValue(String newValue) { this.newValue = newValue; }
 
-    public String getActor() { return actor; }
-    public void setActor(String actor) { this.actor = actor; }
-
-    public LocalDateTime getTimestamp() { return timestamp; }
-    public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
+    public String getOldValue() { return oldValue; }
+    public void setOldValue(String oldValue) { this.oldValue = oldValue; }
 }

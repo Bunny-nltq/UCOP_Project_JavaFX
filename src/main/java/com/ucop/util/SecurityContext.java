@@ -1,14 +1,20 @@
 package com.ucop.util;
 
+import com.ucop.entity.User;
+
 public class SecurityContext {
 
-    private static String currentUser = "SYSTEM";
+    private static User currentUser;
 
-    public static void setCurrentUser(String username) {
-        currentUser = username;
+    public static void setCurrentUser(User user) {
+        currentUser = user;
     }
 
     public static String getCurrentUser() {
-        return currentUser;
+        return currentUser != null ? currentUser.getUsername() : "SYSTEM";
+    }
+
+    public static Long getCurrentUserId() {
+        return currentUser != null ? currentUser.getId().longValue() : null;
     }
 }

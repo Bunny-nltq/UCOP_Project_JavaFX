@@ -6,11 +6,17 @@ import jakarta.persistence.*;
 @MappedSuperclass
 public abstract class BaseAuditable {
 
-    @Column(name = "createdAt")
+    @Column(name = "created_at")
     protected LocalDateTime createdAt;
 
-    @Column(name = "updatedAt")
+    @Column(name = "updated_at")
     protected LocalDateTime updatedAt;
+
+    @Column(name = "created_by")
+    protected String createdBy;
+
+    @Column(name = "updated_by")
+    protected String updatedBy;
 
     @PrePersist
     protected void onCreate() {
@@ -39,5 +45,21 @@ public abstract class BaseAuditable {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
     }
 }

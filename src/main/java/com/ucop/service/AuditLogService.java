@@ -11,18 +11,24 @@ public class AuditLogService {
 
     private final AuditLogDAO dao = new AuditLogDAO();
 
-    public void log(String entity, Long id, String action, Object oldData, Object newData) {
+    public void log(String entityName, Long entityId, String action,
+            Object oldData, Object newData, String details) {
 
-        AuditLog log = new AuditLog();
+AuditLog log = new AuditLog();
 
-        log.setEntityName(entity);
-        log.setEntityId(id);
-        log.setAction(action);
-        log.setOldValue(JsonUtil.toJson(oldData));
-        log.setNewValue(JsonUtil.toJson(newData));
-        log.setActor(SecurityContext.getCurrentUser());
-        log.setTimestamp(LocalDateTime.now());
+log.setEntityName(entityName);
+log.setEntityId(entityId);
+log.setAction(action);
 
-        dao.save(log);
-    }
+log.setOldValue(JsonUtil.toJson(oldData));
+log.setNewValue(JsonUtil.toJson(newData));
+
+log.setUserId(SecurityContext.getCurrentUserId());
+
+log.setDetails(details);
+log.setCreatedAt(LocalDateTime.now());
+
+dao.save(log);
+}
+
 }
