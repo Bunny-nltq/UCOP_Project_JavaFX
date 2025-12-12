@@ -18,7 +18,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <hibernate.version>6.4.4.Final</hibernate.version>
-        <javafx.version>24.0.1</javafx.version>
+        <javafx.version>21.0.5</javafx.version>
     </properties>
 
     <dependencies>
@@ -72,7 +72,6 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-base</artifactId>
             <version>${javafx.version}</version>
-            <classifier>win</classifier>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -92,12 +91,6 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
             <version>5.2.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-fxml</artifactId>
-            <version>${javafx.version}</version>
-            <classifier>win</classifier>
         </dependency>
 
     </dependencies>
@@ -123,7 +116,7 @@
                 <configuration>
                     <mainClass>com.ucop.MainApp</mainClass>
                     <jvmArgs>
-                        <jvmArg>--add-modules javafx.controls,javafx.fxml</jvmArg>
+                        <jvmArg>--add-modules javafx.controls,javafx.fxml,javafx.graphics,javafx.base</jvmArg>
                     </jvmArgs>
                 </configuration>
             </plugin>
