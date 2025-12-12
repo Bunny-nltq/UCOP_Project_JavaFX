@@ -41,6 +41,7 @@ public class CustomerProductController {
     @FXML private ComboBox<String> cboCategory;
     @FXML private ComboBox<String> cboSortBy;
     @FXML private Label lblCartCount;
+    @FXML private Button btnViewCart;
     @FXML private GridPane gridProducts;
     @FXML private ComboBox<String> cboPageSize;
     @FXML private Label lblPage;
@@ -322,10 +323,22 @@ public class CustomerProductController {
 
     @FXML
     private void handleViewCart() {
-        if (currentCart != null) {
-            int count = currentCart.getItems().size();
-            showInfo("Bạn có " + count + " sản phẩm trong giỏ hàng.");
-            // TODO: Navigate to cart view
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/UI/customer/customer_cart.fxml"));
+            Parent root = loader.load();
+
+            CustomerCartController controller = loader.getController();
+            controller.setServices(orderService, productService);
+            controller.setCurrentAccountId(currentAccountId);
+            controller.setParentController(this);
+
+            // Get BorderPane from scene
+            BorderPane mainContainer = (BorderPane) gridProducts.getScene().getRoot();
+            if (mainContainer != null) {
+                mainContainer.setCenter(root);
+            }
+        } catch (IOException e) {
+            showError("Không thể mở giỏ hàng: " + e.getMessage());
         }
     }
 
