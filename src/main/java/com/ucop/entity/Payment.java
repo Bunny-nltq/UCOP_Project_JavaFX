@@ -1,8 +1,20 @@
 package com.ucop.entity;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "payments")
@@ -11,44 +23,44 @@ public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
-
-    @Column(name = "payment_method", nullable = false, length = 50)
+    
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PaymentMethod paymentMethod;
-
-    @Column(name = "amount", nullable = false, precision = 19, scale = 4)
+    
+    @Column(nullable = false)
     private BigDecimal amount;
-
-    @Column(name = "status", nullable = false, length = 50)
+    
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PaymentStatus status = PaymentStatus.PENDING;
-
-    @Column(name = "transaction_id", length = 100)
+    
+    @Column(unique = true)
     private String transactionId;
-
-    @Column(name = "reference_number", length = 100)
+    
+    @Column
     private String referenceNumber;
-
-    @Column(name = "notes", length = 500)
+    
+    @Column
     private String notes;
-
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @Column(name = "created_by", length = 100)
+    
+    @Column(nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+    
+    @Column(nullable = false)
+    private LocalDateTime updatedAt = LocalDateTime.now();
+    
+    @Column
     private String createdBy;
-
-    @Column(name = "updated_by", length = 100)
+    
+    @Column
     private String updatedBy;
-
-    @Column(name = "paid_at")
+    
+    @Column
     private LocalDateTime paidAt;
 
     public Payment() {}
@@ -60,16 +72,17 @@ public class Payment {
         this.status = PaymentStatus.PENDING;
     }
 
-    // Auto timestamps
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Payment payment = (Payment) o;
+        return Objects.equals(id, payment.id) && Objects.equals(transactionId, payment.transactionId);
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, transactionId);
     }
 
     // Getters & Setters

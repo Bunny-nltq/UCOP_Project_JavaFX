@@ -1,51 +1,20 @@
 package com.ucop.entity;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "refunds")
 public class Refund {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_id", nullable = false)
     private Payment payment;
-
-    @Column(name = "amount", nullable = false, precision = 19, scale = 4)
     private BigDecimal amount;
-
-    @Column(name = "refund_type", nullable = false, length = 50)
-    @Enumerated(EnumType.STRING)
     private RefundType refundType;
-
-    @Column(name = "status", nullable = false, length = 50)
-    @Enumerated(EnumType.STRING)
     private RefundStatus status = RefundStatus.PENDING;
-
-    @Column(name = "reason", length = 500)
     private String reason;
-
-    @Column(name = "refund_transaction_id", length = 100)
     private String refundTransactionId;
-
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @Column(name = "created_by", length = 100)
+    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now();
     private String createdBy;
-
-    @Column(name = "updated_by", length = 100)
     private String updatedBy;
-
-    @Column(name = "refunded_at")
     private LocalDateTime refundedAt;
 
     public Refund() {}

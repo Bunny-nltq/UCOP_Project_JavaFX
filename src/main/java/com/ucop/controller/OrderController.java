@@ -1,53 +1,102 @@
 package com.ucop.controller;
 
-import com.ucop.entity.Order;
-import com.ucop.service.OrderService;
-
 import java.util.List;
 import java.util.Optional;
 
+import com.ucop.entity.Order;
+import com.ucop.service.OrderService;
+
+/**
+ * Controller for Order operations
+ */
 public class OrderController {
 
-    private final OrderService orderService;
-
+    private OrderService orderService;
+    
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
     }
 
-    /** Get order by ID */
+    /**
+     * Get order by ID
+     */
     public Optional<Order> getOrder(Long orderId) {
-        return orderService.getOrderById(orderId);
+        try {
+            return orderService.getOrderById(orderId);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    /** Get orders by account ID */
+    /**
+     * Get orders by account ID
+     */
     public List<Order> getOrdersByAccount(Long accountId) {
-        return orderService.getOrdersByAccountId(accountId);
+        try {
+            return orderService.getOrdersByAccountId(accountId);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    /** Get all orders */
+    /**
+     * Get all orders
+     */
     public List<Order> getAllOrders() {
-        return orderService.getAllOrders();
+        try {
+            return orderService.getAllOrders();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    /** Get orders by status */
+    /**
+     * Get orders by status
+     */
     public List<Order> getOrdersByStatus(String status) {
-        Order.OrderStatus orderStatus = Order.OrderStatus.valueOf(status);
-        return orderService.getOrdersByStatus(orderStatus);
+        try {
+            Order.OrderStatus orderStatus = Order.OrderStatus.valueOf(status);
+            return orderService.getOrdersByStatus(orderStatus);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid order status", e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    /** Reserve stock for an order */
+    /**
+     * Reserve stock for order
+     */
     public void reserveStock(Long orderId) {
-        orderService.reserveStock(orderId);
+        try {
+            orderService.reserveStock(orderId, null);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    /** Update order status */
+    /**
+     * Update order status
+     */
     public void updateOrderStatus(Long orderId, String status) {
-        Order.OrderStatus orderStatus = Order.OrderStatus.valueOf(status);
-        orderService.updateOrderStatus(orderId, orderStatus);
+        try {
+            Order.OrderStatus orderStatus = Order.OrderStatus.valueOf(status);
+            orderService.updateOrderStatus(orderId, orderStatus, null);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid order status", e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    /** Cancel order */
+    /**
+     * Cancel order
+     */
     public void cancelOrder(Long orderId) {
-        orderService.cancelOrder(orderId);
+        try {
+            orderService.cancelOrder(orderId, null);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

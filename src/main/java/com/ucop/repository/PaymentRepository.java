@@ -1,8 +1,9 @@
 package com.ucop.repository;
 
-import com.ucop.entity.Payment;
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
+
+import com.ucop.entity.Payment;
 
 public interface PaymentRepository {
     Payment save(Payment payment);

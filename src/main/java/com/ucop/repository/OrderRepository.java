@@ -1,8 +1,9 @@
 package com.ucop.repository;
 
-import com.ucop.entity.Order;
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
+
+import com.ucop.entity.Order;
 
 public interface OrderRepository {
     Order save(Order order);

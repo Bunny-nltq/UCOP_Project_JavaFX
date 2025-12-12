@@ -1,48 +1,18 @@
 package com.ucop.entity;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(
-        name = "stock_items",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"warehouse_id", "item_id"})
-)
 public class StockItem {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "warehouse_id", nullable = false)
     private Warehouse warehouse;
-
-    @Column(name = "item_id", nullable = false)
     private Long itemId;
-
-    @Column(name = "on_hand", nullable = false)
     private Long onHand = 0L;
-
-    @Column(name = "reserved", nullable = false)
-    private Long reserved = 0L;
-
-    @Column(name = "low_stock_threshold", nullable = false)
     private Long lowStockThreshold = 10L;
-
-    @Column(name = "is_low_stock")
+    private Long reserved = 0L;
     private Boolean isLowStock = false;
-
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @Column(name = "created_by", length = 100)
+    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now();
     private String createdBy;
-
-    @Column(name = "updated_by", length = 100)
     private String updatedBy;
 
     public StockItem() {}

@@ -1,8 +1,18 @@
 package com.ucop.entity;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "cart_items")
@@ -11,29 +21,29 @@ public class CartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
-
-    @Column(name = "item_id", nullable = false)
-    private Long itemId;
-
+    
     @Column(nullable = false)
-    private Integer quantity;
-
-    @Column(name = "unit_price", nullable = false, precision = 19, scale = 4)
+    private Long itemId;
+    
+    @Column(nullable = false)
+    private int quantity;
+    
+    @Column(nullable = false)
     private BigDecimal unitPrice;
-
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    
+    @Column(nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+    
+    @Column(nullable = false)
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     public CartItem() {}
 
-    public CartItem(Long itemId, Integer quantity, BigDecimal unitPrice) {
+    public CartItem(Long itemId, int quantity, BigDecimal unitPrice) {
         this.itemId = itemId;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
@@ -51,7 +61,23 @@ public class CartItem {
     }
 
     public BigDecimal getSubtotal() {
-        return unitPrice.multiply(BigDecimal.valueOf(quantity));
+        if (unitPrice == null) {
+            return BigDecimal.ZERO;
+        }
+        return unitPrice.multiply(new BigDecimal(quantity));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CartItem cartItem = (CartItem) o;
+        return Objects.equals(id, cartItem.id) && Objects.equals(itemId, cartItem.itemId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, itemId);
     }
 
     // Getters & Setters
@@ -67,9 +93,13 @@ public class CartItem {
 
     public void setItemId(Long itemId) { this.itemId = itemId; }
 
-    public Integer getQuantity() { return quantity; }
+    public int getQuantity() {
+        return quantity;
+    }
 
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 
     public BigDecimal getUnitPrice() { return unitPrice; }
 

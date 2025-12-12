@@ -1,10 +1,17 @@
 package com.ucop.service;
 
-import com.ucop.entity.*;
-import com.ucop.repository.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
+
+import com.ucop.entity.Order;
+import com.ucop.entity.Payment;
+import com.ucop.entity.Refund;
+import com.ucop.repository.OrderRepository;
+import com.ucop.repository.PaymentRepository;
+import com.ucop.repository.RefundRepository;
 
 public class RefundService {
 
@@ -77,9 +84,8 @@ public class RefundService {
             refund.setStatus(Refund.RefundStatus.FAILED);
         }
 
-        // updatedAt sẽ tự động set bằng @PreUpdate
+        refund.setUpdatedAt(LocalDateTime.now());
         refundRepository.update(refund);
-
         return refund;
     }
 
@@ -112,6 +118,6 @@ public class RefundService {
      * Generate a unique refund transaction ID
      */
     private String generateRefundTransactionId() {
-        return "REFUND-" + System.currentTimeMillis() + "-" + (int)(Math.random() * 10000);
+        return "REFUND-" + System.currentTimeMillis() + "-" + (int)(ThreadLocalRandom.current().nextDouble() * 10000);
     }
 }

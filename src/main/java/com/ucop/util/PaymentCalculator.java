@@ -23,7 +23,10 @@ public class PaymentCalculator {
     }
 
     /**
-     * Calculate shipping fee based on subtotal
+     * Calculate shipping fee based on subtotal tiers
+     * - Free shipping: >= 500,000
+     * - Reduced fee: >= 100,000 (10,000)
+     * - Standard fee: < 100,000 (25,000)
      */
     public static BigDecimal calculateShippingFee(BigDecimal subtotal) {
         if (subtotal == null || subtotal.compareTo(BigDecimal.ZERO) <= 0) {
@@ -35,13 +38,13 @@ public class PaymentCalculator {
             return BigDecimal.ZERO;
         }
 
-        // Base shipping fee 25,000
-        if (subtotal.compareTo(new BigDecimal("100000")) < 0) {
-            return BASE_SHIPPING_RATE;
+        // Reduced shipping for orders >= 100,000
+        if (subtotal.compareTo(new BigDecimal("100000")) >= 0) {
+            return new BigDecimal("10000");
         }
 
-        // Reduced shipping for orders >= 100,000
-        return new BigDecimal("10000");
+        // Standard shipping fee for orders < 100,000
+        return BASE_SHIPPING_RATE;
     }
 
     /**
