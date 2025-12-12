@@ -1,14 +1,15 @@
 package com.ucop.repository.impl;
 
-import com.ucop.entity.Product;
-import com.ucop.repository.ProductRepository;
+import java.util.List;
+import java.util.Optional;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
-import java.util.List;
-import java.util.Optional;
+import com.ucop.entity.Item;
+import com.ucop.repository.ProductRepository;
 
 public class ProductRepositoryImpl implements ProductRepository {
     
@@ -19,13 +20,13 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
     
     @Override
-    public Product save(Product product) {
+    public Item save(Item item) {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            session.saveOrUpdate(product);
+            session.saveOrUpdate(item);
             transaction.commit();
-            return product;
+            return item;
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             throw e;
@@ -33,64 +34,64 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
     
     @Override
-    public Optional<Product> findById(Long id) {
+    public Optional<Item> findById(Long id) {
         try (Session session = sessionFactory.openSession()) {
-            Product product = session.get(Product.class, id);
-            return Optional.ofNullable(product);
+            Item item = session.get(Item.class, id);
+            return Optional.ofNullable(item);
         }
     }
     
     @Override
-    public List<Product> findAll() {
+    public List<Item> findAll() {
         try (Session session = sessionFactory.openSession()) {
-            return session.createQuery("FROM Product", Product.class).list();
+            return session.createQuery("FROM Item", Item.class).list();
         }
     }
     
     @Override
-    public List<Product> findByCategory(String category) {
+    public List<Item> findByCategory(String category) {
         try (Session session = sessionFactory.openSession()) {
-            Query<Product> query = session.createQuery(
-                "FROM Product WHERE category = :category", Product.class);
+            Query<Item> query = session.createQuery(
+                "FROM Item i WHERE i.category.name = :category", Item.class);
             query.setParameter("category", category);
             return query.list();
         }
     }
     
     @Override
-    public List<Product> findByNameContaining(String keyword) {
+    public List<Item> findByNameContaining(String keyword) {
         try (Session session = sessionFactory.openSession()) {
-            Query<Product> query = session.createQuery(
-                "FROM Product WHERE LOWER(name) LIKE LOWER(:keyword)", Product.class);
+            Query<Item> query = session.createQuery(
+                "FROM Item WHERE LOWER(name) LIKE LOWER(:keyword)", Item.class);
             query.setParameter("keyword", "%" + keyword + "%");
             return query.list();
         }
     }
     
     @Override
-    public List<Product> findActiveProducts() {
+    public List<Item> findActiveProducts() {
         try (Session session = sessionFactory.openSession()) {
-            Query<Product> query = session.createQuery(
-                "FROM Product WHERE isActive = true", Product.class);
+            Query<Item> query = session.createQuery(
+                "FROM Item WHERE status = 1", Item.class);
             return query.list();
         }
     }
     
     @Override
-    public List<Product> findInStockProducts() {
+    public List<Item> findInStockProducts() {
         try (Session session = sessionFactory.openSession()) {
-            Query<Product> query = session.createQuery(
-                "FROM Product WHERE isActive = true AND stockQuantity > 0", Product.class);
+            Query<Item> query = session.createQuery(
+                "FROM Item WHERE status = 1 AND stock > 0", Item.class);
             return query.list();
         }
     }
     
     @Override
-    public void delete(Product product) {
+    public void delete(Item item) {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            session.delete(product);
+            session.delete(item);
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
@@ -103,7 +104,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
-            Product product = session.get(Product.class, id);
+            Item product = session.get(Item.class, id);
             if (product != null) {
                 session.delete(product);
             }
@@ -117,7 +118,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public long count() {
         try (Session session = sessionFactory.openSession()) {
-            Query<Long> query = session.createQuery("SELECT COUNT(p) FROM Product p", Long.class);
+            Query<Long> query = session.createQuery("SELECT COUNT(p) FROM Item p", Long.class);
             return query.uniqueResult();
         }
     }

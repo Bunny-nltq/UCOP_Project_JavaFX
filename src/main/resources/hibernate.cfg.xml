@@ -36,7 +36,6 @@
         <mapping class="com.ucop.entity.Warehouse"/>
         <mapping class="com.ucop.entity.StockItem"/>
         <mapping class="com.ucop.entity.Customer"/>
-        <mapping class="com.ucop.entity.Product"/>
         <mapping class="com.ucop.entity.Cart"/>
         <mapping class="com.ucop.entity.CartItem"/>
         <mapping class="com.ucop.entity.Order"/>

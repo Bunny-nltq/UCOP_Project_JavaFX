@@ -1,18 +1,19 @@
 package com.ucop.repository;
 
-import com.ucop.entity.Product;
 import java.util.List;
 import java.util.Optional;
 
+import com.ucop.entity.Item;
+
 public interface ProductRepository {
-    Product save(Product product);
-    Optional<Product> findById(Long id);
-    List<Product> findAll();
-    List<Product> findByCategory(String category);
-    List<Product> findByNameContaining(String keyword);
-    List<Product> findActiveProducts();
-    List<Product> findInStockProducts();
-    void delete(Product product);
+    Item save(Item item);
+    Optional<Item> findById(Long id);
+    List<Item> findAll();
+    List<Item> findByCategory(String category);
+    List<Item> findByNameContaining(String keyword);
+    List<Item> findActiveProducts();
+    List<Item> findInStockProducts();
+    void delete(Item item);
     void deleteById(Long id);
     long count();
 }

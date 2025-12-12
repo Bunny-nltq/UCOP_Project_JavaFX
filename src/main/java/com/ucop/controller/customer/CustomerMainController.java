@@ -1,6 +1,6 @@
 package com.ucop.controller.customer;
 
-import com.ucop.service.ProductService;
+import com.ucop.service.ItemService;
 import com.ucop.service.OrderService;
 import com.ucop.service.PromotionService;
 import com.ucop.repository.*;
@@ -27,7 +27,7 @@ public class CustomerMainController {
     @FXML private Label lblWelcome;
     @FXML private Label lblCartCount;
 
-    private ProductService productService;
+    private ItemService productService;
     private OrderService orderService;
     private PromotionService promotionService;
     private Long currentAccountId = 1L; // TODO: Get from login session
@@ -64,7 +64,7 @@ public class CustomerMainController {
         PromotionUsageRepository promotionUsageRepository = new PromotionUsageRepository(sessionFactory);
         
         // Initialize services
-        productService = new ProductService(productRepository);
+        productService = new ItemService(productRepository);
         orderService = new OrderService(orderRepository, cartRepository, stockItemRepository, 
                                         paymentRepository, shipmentRepository, appointmentRepository);
         promotionService = new PromotionService(promotionRepository, promotionUsageRepository);

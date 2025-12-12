@@ -1,8 +1,8 @@
 package com.ucop.controller.customer;
 
-import com.ucop.entity.Product;
+import com.ucop.entity.Item;
 import com.ucop.entity.Cart;
-import com.ucop.service.ProductService;
+import com.ucop.service.ItemService;
 import com.ucop.service.OrderService;
 import com.ucop.dao.CartItemDAO;
 import javafx.fxml.FXML;
@@ -44,10 +44,10 @@ public class CustomerProductController {
     @FXML private Button btnNext;
     @FXML private Button btnLast;
 
-    private ProductService productService;
+    private ItemService productService;
     private OrderService orderService;
-    private List<Product> allProducts = new ArrayList<>();
-    private List<Product> filteredProducts = new ArrayList<>();
+    private List<Item> allProducts = new ArrayList<>();
+    private List<Item> filteredProducts = new ArrayList<>();
     private int currentPage = 1;
     private int pageSize = 12;
     private int totalPages = 1;
@@ -87,7 +87,7 @@ public class CustomerProductController {
     /**
      * Set services (dependency injection)
      */
-    public void setServices(ProductService productService, OrderService orderService) {
+    public void setServices(ItemService productService, OrderService orderService) {
         this.productService = productService;
         this.orderService = orderService;
         
@@ -173,10 +173,10 @@ public class CustomerProductController {
 
         int start = (currentPage - 1) * pageSize;
         int end = Math.min(start + pageSize, total);
-        List<Product> pageProducts = filteredProducts.subList(start, end);
+        List<Item> pageProducts = filteredProducts.subList(start, end);
 
         int row = 0, col = 0;
-        for (Product product : pageProducts) {
+        for (Item product : pageProducts) {
             VBox productCard = createProductCard(product);
             gridProducts.add(productCard, col, row);
             
@@ -196,7 +196,7 @@ public class CustomerProductController {
         if (btnLast != null) btnLast.setDisable(currentPage == totalPages);
     }
 
-    private VBox createProductCard(Product product) {
+    private VBox createProductCard(Item product) {
         VBox card = new VBox(10);
         card.setPadding(new Insets(15));
         card.setAlignment(Pos.CENTER);
@@ -260,7 +260,7 @@ public class CustomerProductController {
         lblPrice.setFont(Font.font("System", FontWeight.BOLD, 18));
         lblPrice.setStyle("-fx-text-fill: #f44336;");
 
-        Label lblCategory = new Label(product.getCategory());
+        Label lblCategory = new Label(product.getCategory() != null ? product.getCategory().getName() : "");
         lblCategory.setStyle("-fx-background-color: #E3F2FD; -fx-padding: 5 12; -fx-font-size: 13px;");
 
         // Button container
@@ -284,7 +284,7 @@ public class CustomerProductController {
         return card;
     }
 
-    private void handleAddToCart(Product product) {
+    private void handleAddToCart(Item product) {
         if (orderService == null || currentCart == null) {
             showError("Không thể thêm vào giỏ hàng. Vui lòng đăng nhập lại.");
             return;
@@ -292,7 +292,7 @@ public class CustomerProductController {
 
         try {
             // Check if product is available
-            if (!productService.isProductAvailable(product.getId(), 1L)) {
+            if (!productService.isProductAvailable(product.getId(), 1)) {
                 showError("Sản phẩm không còn hàng hoặc không khả dụng.");
                 return;
             }
@@ -300,7 +300,7 @@ public class CustomerProductController {
             // Add to cart
             CartItemDAO itemDTO = new CartItemDAO();
             itemDTO.setItemId(product.getId());
-            itemDTO.setQuantity(1L);
+            itemDTO.setQuantity(1);
             itemDTO.setUnitPrice(product.getPrice());
 
             orderService.addToCart(currentCart.getId(), itemDTO);
@@ -326,7 +326,7 @@ public class CustomerProductController {
     /**
      * View product details
      */
-    private void viewProductDetails(Product product) {
+    private void viewProductDetails(Item product) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/UI/customer/product-detail.fxml"));
             Parent root = loader.load();

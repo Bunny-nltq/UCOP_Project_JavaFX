@@ -1,8 +1,8 @@
 package com.ucop.controller.customer;
 
-import com.ucop.entity.Product;
+import com.ucop.entity.Item;
 import com.ucop.entity.Cart;
-import com.ucop.service.ProductService;
+import com.ucop.service.ItemService;
 import com.ucop.service.OrderService;
 import com.ucop.dao.CartItemDAO;
 import javafx.fxml.FXML;
@@ -34,8 +34,8 @@ public class ProductDetailController {
     @FXML private Button btnAddToCart;
     @FXML private StackPane imageContainer;
 
-    private Product product;
-    private ProductService productService;
+    private Item product;
+    private ItemService productService;
     private OrderService orderService;
     private Long currentAccountId;
     private Cart currentCart;
@@ -54,7 +54,7 @@ public class ProductDetailController {
     /**
      * Set the product to display
      */
-    public void setProduct(Product product) {
+    public void setProduct(Item product) {
         this.product = product;
         displayProductDetails();
     }
@@ -62,7 +62,7 @@ public class ProductDetailController {
     /**
      * Set services
      */
-    public void setServices(ProductService productService, OrderService orderService) {
+    public void setServices(ItemService productService, OrderService orderService) {
         this.productService = productService;
         this.orderService = orderService;
     }
@@ -120,7 +120,7 @@ public class ProductDetailController {
         }
 
         if (lblCategory != null) {
-            lblCategory.setText(product.getCategory() != null ? product.getCategory() : "");
+            lblCategory.setText(product.getCategory() != null ? product.getCategory().getName() : "");
         }
 
         if (lblPrice != null) {
@@ -128,11 +128,12 @@ public class ProductDetailController {
         }
 
         if (lblStock != null) {
-            String stockText = product.isInStock() 
-                ? "Còn hàng (" + product.getStockQuantity() + " sản phẩm)"
+            boolean inStock = product.getStatus() == 1 && product.getStock() > 0;
+            String stockText = inStock 
+                ? "Còn hàng (" + product.getStock() + " sản phẩm)"
                 : "Hết hàng";
             lblStock.setText(stockText);
-            lblStock.setStyle(product.isInStock() 
+            lblStock.setStyle(inStock
                 ? "-fx-text-fill: green;" 
                 : "-fx-text-fill: red;");
         }
@@ -142,15 +143,15 @@ public class ProductDetailController {
         }
 
         if (btnAddToCart != null) {
-            btnAddToCart.setDisable(!product.isInStock());
+            btnAddToCart.setDisable(!(product.getStatus() == 1 && product.getStock() > 0));
         }
 
-        if (spnQuantity != null && product.getStockQuantity() != null) {
-            int maxQuantity = Math.min(product.getStockQuantity().intValue(), 99);
+        if (spnQuantity != null && product.getStock() != null) {
+            int maxQuantity = Math.min(product.getStock(), 99);
             SpinnerValueFactory<Integer> valueFactory = 
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(1, maxQuantity, 1);
             spnQuantity.setValueFactory(valueFactory);
-            spnQuantity.setDisable(!product.isInStock());
+            spnQuantity.setDisable(!(product.getStatus() == 1 && product.getStock() > 0));
         }
     }
 
@@ -165,7 +166,7 @@ public class ProductDetailController {
             int quantity = spnQuantity != null ? spnQuantity.getValue() : 1;
 
             // Check if product is available
-            if (!productService.isProductAvailable(product.getId(), (long) quantity)) {
+            if (!productService.isProductAvailable(product.getId(), quantity)) {
                 showError("Số lượng yêu cầu vượt quá số lượng còn trong kho.");
                 return;
             }
@@ -173,7 +174,7 @@ public class ProductDetailController {
             // Add to cart
             CartItemDAO itemDTO = new CartItemDAO();
             itemDTO.setItemId(product.getId());
-            itemDTO.setQuantity((long) quantity);
+            itemDTO.setQuantity(quantity);
             itemDTO.setUnitPrice(product.getPrice());
 
             orderService.addToCart(currentCart.getId(), itemDTO);

@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import com.ucop.Dao.PaymentCalculationDAO;
+import com.ucop.dao.PaymentCalculationDAO;
 import com.ucop.entity.Payment;
 import com.ucop.service.PaymentService;
 

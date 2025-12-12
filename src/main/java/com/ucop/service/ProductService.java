@@ -1,16 +1,16 @@
 package com.ucop.service;
 
-import com.ucop.entity.Product;
-import com.ucop.repository.ProductRepository;
-
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.ucop.entity.Item;
+import com.ucop.repository.ProductRepository;
+
 /**
- * Service for managing products
+ * Service for managing items (formerly products)
  */
 public class ProductService {
     private final ProductRepository productRepository;
@@ -20,44 +20,44 @@ public class ProductService {
     }
 
     /**
-     * Create or update product
+     * Create or update item
      */
-    public Product saveProduct(Product product) {
+    public Item saveProduct(Item product) {
         return productRepository.save(product);
     }
 
     /**
-     * Get product by ID
+     * Get item by ID
      */
-    public Optional<Product> getProductById(Long id) {
+    public Optional<Item> getProductById(Long id) {
         return productRepository.findById(id);
     }
 
     /**
-     * Get all products
+     * Get all items
      */
-    public List<Product> getAllProducts() {
+    public List<Item> getAllProducts() {
         return productRepository.findAll();
     }
 
     /**
-     * Get active products only
+     * Get active items only
      */
-    public List<Product> getActiveProducts() {
+    public List<Item> getActiveProducts() {
         return productRepository.findActiveProducts();
     }
 
     /**
-     * Get products in stock
+     * Get items in stock
      */
-    public List<Product> getInStockProducts() {
+    public List<Item> getInStockProducts() {
         return productRepository.findInStockProducts();
     }
 
     /**
-     * Search products by keyword
+     * Search items by keyword
      */
-    public List<Product> searchProducts(String keyword) {
+    public List<Item> searchProducts(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return getAllProducts();
         }
@@ -65,9 +65,9 @@ public class ProductService {
     }
 
     /**
-     * Get products by category
+     * Get items by category
      */
-    public List<Product> getProductsByCategory(String category) {
+    public List<Item> getProductsByCategory(String category) {
         if (category == null || category.trim().isEmpty() || "Tất cả".equals(category)) {
             return getAllProducts();
         }
@@ -75,11 +75,11 @@ public class ProductService {
     }
 
     /**
-     * Filter and search products with multiple criteria
+     * Filter and search items with multiple criteria
      */
-    public List<Product> filterProducts(String keyword, String category, 
+    public List<Item> filterProducts(String keyword, String category, 
                                         BigDecimal minPrice, BigDecimal maxPrice) {
-        List<Product> products = getActiveProducts();
+        List<Item> products = getActiveProducts();
 
         // Filter by keyword
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -94,7 +94,7 @@ public class ProductService {
         // Filter by category
         if (category != null && !category.trim().isEmpty() && !"Tất cả".equals(category)) {
             products = products.stream()
-                    .filter(p -> category.equals(p.getCategory()))
+                    .filter(p -> p.getCategory() != null && category.equals(p.getCategory().getName()))
                     .collect(Collectors.toList());
         }
 
@@ -114,36 +114,34 @@ public class ProductService {
     }
 
     /**
-     * Sort products by different criteria
+     * Sort items by different criteria
      */
-    public List<Product> sortProducts(List<Product> products, String sortBy) {
+    public List<Item> sortProducts(List<Item> products, String sortBy) {
         if (products == null || products.isEmpty()) {
             return products;
         }
 
         return switch (sortBy) {
             case "Giá tăng dần" -> products.stream()
-                    .sorted(Comparator.comparing(Product::getPrice))
+                    .sorted(Comparator.comparing(Item::getPrice))
                     .collect(Collectors.toList());
             case "Giá giảm dần" -> products.stream()
-                    .sorted(Comparator.comparing(Product::getPrice).reversed())
+                    .sorted(Comparator.comparing(Item::getPrice).reversed())
                     .collect(Collectors.toList());
             case "Tên A-Z" -> products.stream()
-                    .sorted(Comparator.comparing(Product::getName))
+                    .sorted(Comparator.comparing(Item::getName))
                     .collect(Collectors.toList());
-            case "Mới nhất" -> products.stream()
-                    .sorted(Comparator.comparing(Product::getCreatedAt).reversed())
-                    .collect(Collectors.toList());
+            case "Mới nhất" -> products;
             default -> products;
         };
     }
 
     /**
-     * Get product categories
+     * Get item categories
      */
     public List<String> getCategories() {
         return productRepository.findAll().stream()
-                .map(Product::getCategory)
+                .map(item -> item.getCategory() != null ? item.getCategory().getName() : null)
                 .filter(cat -> cat != null && !cat.trim().isEmpty())
                 .distinct()
                 .sorted()
@@ -151,44 +149,44 @@ public class ProductService {
     }
 
     /**
-     * Update product stock
+     * Update item stock
      */
-    public void updateStock(Long productId, Long quantity) {
-        Optional<Product> productOpt = productRepository.findById(productId);
+    public void updateStock(Long productId, Integer quantity) {
+        Optional<Item> productOpt = productRepository.findById(productId);
         if (productOpt.isEmpty()) {
-            throw new IllegalArgumentException("Product not found with id: " + productId);
+            throw new IllegalArgumentException("Item not found with id: " + productId);
         }
 
-        Product product = productOpt.get();
-        product.setStockQuantity(quantity);
+        Item product = productOpt.get();
+        product.setStock(quantity);
         productRepository.save(product);
     }
 
     /**
-     * Delete product
+     * Delete item
      */
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
     }
 
     /**
-     * Count total products
+     * Count total items
      */
     public long countProducts() {
         return productRepository.count();
     }
 
     /**
-     * Check if product is available for purchase
+     * Check if item is available for purchase
      */
-    public boolean isProductAvailable(Long productId, Long requestedQuantity) {
-        Optional<Product> productOpt = productRepository.findById(productId);
+    public boolean isProductAvailable(Long productId, Integer requestedQuantity) {
+        Optional<Item> productOpt = productRepository.findById(productId);
         if (productOpt.isEmpty()) {
             return false;
         }
 
-        Product product = productOpt.get();
-        return product.getIsActive() && 
-               product.getStockQuantity() >= requestedQuantity;
+        Item product = productOpt.get();
+        return product.getStatus() == 1 && 
+               product.getStock() >= requestedQuantity;
     }
 }

@@ -1,6 +1,6 @@
 package com.ucop.controller;
 
-import com.ucop.Dao.CartItemDAO;
+import com.ucop.dao.CartItemDAO;
 import com.ucop.entity.Cart;
 import com.ucop.entity.Order;
 import com.ucop.service.OrderService;
