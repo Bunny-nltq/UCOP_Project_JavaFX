@@ -93,6 +93,18 @@
             <version>5.2.2</version>
         </dependency>
 
+        <!-- Log4j2 Core for proper logging -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.23.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.23.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -115,9 +127,6 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>com.ucop.MainApp</mainClass>
-                    <jvmArgs>
-                        <jvmArg>--add-modules javafx.controls,javafx.fxml,javafx.graphics,javafx.base</jvmArg>
-                    </jvmArgs>
                 </configuration>
             </plugin>
 

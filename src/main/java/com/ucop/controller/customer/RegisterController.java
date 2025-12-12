@@ -5,10 +5,16 @@ import com.ucop.entity.User;
 import com.ucop.service.RoleService;
 import com.ucop.service.UserService;
 import com.ucop.util.HashUtil;
+
 import javafx.event.ActionEvent;
-import javafx.fxml.*;
-import javafx.scene.*;
-import javafx.scene.control.*;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 public class RegisterController {
@@ -40,8 +46,14 @@ public class RegisterController {
                 return;
             }
 
-            if (userService.findByUsernameOrEmail(txtUsername.getText()) != null) {
-                lblMsg.setText("Username đã tồn tại!");
+            // Validate email format
+            if (!txtEmail.getText().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+                lblMsg.setText("Email không hợp lệ!");
+                return;
+            }
+
+            if (userService.findByUsernameOrEmail(txtUsername.getText()) != null || userService.findByUsernameOrEmail(txtEmail.getText()) != null) {
+                lblMsg.setText("Username hoặc email đã tồn tại!");
                 return;
             }
 
@@ -50,6 +62,7 @@ public class RegisterController {
             u.setPassword(HashUtil.sha256(txtPassword.getText()));
             u.setEmail(txtEmail.getText());
             u.setActive(true);
+            u.setLocked(false);
 
             // GÁN ROLE CUSTOMER MẶC ĐỊNH
             Role customer = roleService.findByName("CUSTOMER");
@@ -63,7 +76,7 @@ public class RegisterController {
             lblMsg.setText("Đăng ký thành công!");
 
         } catch(Exception ex){
-            lblMsg.setText("Lỗi đăng ký!");
+            lblMsg.setText("Lỗi đăng ký: " + ex.getMessage());
             ex.printStackTrace();
         }
     }

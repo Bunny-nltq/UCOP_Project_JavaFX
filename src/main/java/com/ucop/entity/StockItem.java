@@ -2,16 +2,42 @@ package com.ucop.entity;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 
+@Entity
+@Table(name = "stock_items")
 public class StockItem {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "warehouse_id", nullable = false)
     private Warehouse warehouse;
+    
+    @Column(name = "item_id")
     private Long itemId;
+    
+    @Column(name = "on_hand")
     private Long onHand = 0L;
+    
+    @Column(name = "low_stock_threshold")
     private Long lowStockThreshold = 10L;
+    
+    @Column(name = "reserved")
     private Long reserved = 0L;
+    
+    @Column(name = "is_low_stock")
     private Boolean isLowStock = false;
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();

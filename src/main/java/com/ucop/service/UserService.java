@@ -1,14 +1,15 @@
 package com.ucop.service;
 
+import java.util.List;
+
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+
 import com.ucop.dao.UserDAO;
 import com.ucop.entity.AccountProfile;
 import com.ucop.entity.Role;
 import com.ucop.entity.User;
 import com.ucop.util.HibernateUtil;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-
-import java.util.List;
 
 public class UserService {
 
@@ -23,9 +24,24 @@ public class UserService {
     /** Save new user */
     public void save(User user) {
         Transaction tx = null;
-
-        try (Session s = HibernateUtil.getSessionFactory().openSession()) {
+        Session s = HibernateUtil.getSessionFactory().openSession();
+        
+        try {
+            System.out.println("[UserService] save() - user=" + user.getUsername());
             tx = s.beginTransaction();
+
+            // 🌟 ensure default CUSTOMER role FIRST
+            if (user.getRoles().isEmpty()) {
+                Role customer = s.createQuery("from Role where name = 'CUSTOMER'", Role.class)
+                        .uniqueResult();
+                System.out.println("[UserService] found role CUSTOMER=" + customer);
+                if (customer != null) {
+                    // Merge role into session and add to user
+                    Role managedRole = s.merge(customer);
+                    System.out.println("[UserService] merged role id=" + managedRole.getId());
+                    user.addRole(managedRole);
+                }
+            }
 
             // 🌟 ensure profile link
             if (user.getProfile() == null) {
@@ -34,19 +50,22 @@ public class UserService {
                 user.setProfile(profile);
             }
 
-            // 🌟 ensure default CUSTOMER role
-            if (user.getRoles().isEmpty()) {
-                Role customer = s.createQuery("from Role where name = 'CUSTOMER'", Role.class)
-                        .uniqueResult();
-                if (customer != null) user.addRole(customer);
-            }
-
             s.persist(user);
+            s.flush();
             tx.commit();
+            System.out.println("[UserService] User saved successfully id=" + user.getId());
 
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            if (tx != null && tx.isActive()) {
+                tx.rollback();
+            }
+            System.out.println("[UserService] Error saving user: " + e.getMessage());
+            e.printStackTrace();
             throw e;
+        } finally {
+            if (s != null && s.isOpen()) {
+                s.close();
+            }
         }
     }
 

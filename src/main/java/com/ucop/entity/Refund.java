@@ -3,14 +3,39 @@ package com.ucop.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 
+@Entity
+@Table(name = "refunds")
 public class Refund {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_id", nullable = false)
     private Payment payment;
+    
+    @Column(nullable = false)
     private BigDecimal amount;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "refund_type")
     private RefundType refundType;
+    
+    @Enumerated(EnumType.STRING)
     private RefundStatus status = RefundStatus.PENDING;
     private String reason;
     private String refundTransactionId;

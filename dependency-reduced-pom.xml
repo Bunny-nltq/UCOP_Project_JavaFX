@@ -3,7 +3,6 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.ucop</groupId>
   <artifactId>ucop-order-payment-core</artifactId>
-  <packaging>pom</packaging>
   <name>UCOP - Order &amp; Payment Core</name>
   <version>1.0.0</version>
   <description>Universal Commerce &amp; Operations Platform - Order and Payment Management</description>
@@ -22,9 +21,6 @@
         <version>0.0.8</version>
         <configuration>
           <mainClass>com.ucop.MainApp</mainClass>
-          <jvmArgs>
-            <jvmArg>--add-modules javafx.controls,javafx.fxml</jvmArg>
-          </jvmArgs>
         </configuration>
       </plugin>
       <plugin>
@@ -58,14 +54,11 @@
       </plugin>
     </plugins>
   </build>
-  <modules>
-    <module>demo</module>
-  </modules>
   <properties>
     <hibernate.version>6.4.4.Final</hibernate.version>
     <maven.compiler.target>21</maven.compiler.target>
     <maven.compiler.source>21</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <javafx.version>24.0.1</javafx.version>
+    <javafx.version>21.0.5</javafx.version>
   </properties>
 </project>

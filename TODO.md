@@ -1,0 +1,3 @@
+- [ ] Stage all changes with git add .
+- [ ] Commit changes with message "Update UCOP Order Payment Core"
+- [ ] Push to origin main (from current branch blackboxai/fix-javafx-dependencies)
