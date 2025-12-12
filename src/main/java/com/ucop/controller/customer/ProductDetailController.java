@@ -1,25 +1,29 @@
 package com.ucop.controller.customer;
 
-import com.ucop.entity.Item;
-import com.ucop.dao.CartItemDTO;
+import java.io.IOException;
+import java.math.BigDecimal;
+
+import com.ucop.dao.CartItemDAO;
 import com.ucop.entity.Cart;
-import com.ucop.service.ProductService;
+import com.ucop.entity.Item;
 import com.ucop.service.OrderService;
+import com.ucop.service.ProductService;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
-
-import java.io.IOException;
-import java.math.BigDecimal;
 
 /**
  * Controller for Product Detail View
@@ -173,7 +177,7 @@ public class ProductDetailController {
             }
 
             // Add to cart
-            CartItemDTO itemDTO = new CartItemDTO();
+            CartItemDAO itemDTO = new CartItemDAO();
             itemDTO.setItemId(product.getId());
             itemDTO.setQuantity(quantity);
             itemDTO.setUnitPrice(product.getPrice());
