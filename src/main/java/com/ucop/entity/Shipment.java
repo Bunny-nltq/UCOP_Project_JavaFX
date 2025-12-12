@@ -1,51 +1,20 @@
 package com.ucop.entity;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "shipments")
 public class Shipment {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
-
-    @Column(name = "tracking_number", unique = true, length = 100)
     private String trackingNumber;
-
-    @Column(name = "carrier", length = 100)
     private String carrier;
-
-    @Column(name = "status", nullable = false, length = 50)
-    @Enumerated(EnumType.STRING)
     private ShipmentStatus status = ShipmentStatus.PENDING;
-
-    @Column(name = "expected_delivery_date")
     private LocalDateTime expectedDeliveryDate;
-
-    @Column(name = "actual_delivery_date")
     private LocalDateTime actualDeliveryDate;
-
-    @Column(name = "warehouse_id")
     private Long warehouseId;
-
-    @Column(name = "notes", length = 500)
     private String notes;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
-
-    @Column(name = "created_by", length = 100)
     private String createdBy;
-
-    @Column(name = "updated_by", length = 100)
     private String updatedBy;
 
     // Constructors

@@ -1,16 +1,16 @@
-package com.ucop.dto;
+package com.ucop.Dao;
 
 import java.math.BigDecimal;
 
-public class CartItemDTO {
+public class CartItemDAO {
     private Long itemId;
     private Long quantity;
     private BigDecimal unitPrice;
 
-    public CartItemDTO() {
+    public CartItemDAO() {
     }
 
-    public CartItemDTO(Long itemId, Long quantity, BigDecimal unitPrice) {
+    public CartItemDAO(Long itemId, Long quantity, BigDecimal unitPrice) {
         this.itemId = itemId;
         this.quantity = quantity;
         this.unitPrice = unitPrice;

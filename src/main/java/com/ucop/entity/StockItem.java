@@ -1,56 +1,18 @@
 package com.ucop.entity;
 
-import javax.persistence.*;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "stock_items", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"warehouse_id", "item_id"})
-})
 public class StockItem {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "warehouse_id", nullable = false)
     private Warehouse warehouse;
-
-    @NotNull
-    @Column(name = "item_id", nullable = false)
-    private Long itemId;  // Reference to Item (from Catalog module)
-
-    @NotNull
-    @Min(value = 0, message = "On hand quantity cannot be negative")
-    @Column(name = "on_hand", nullable = false)
+    private Long itemId;
     private Long onHand = 0L;
-
-    @NotNull
-    @Min(value = 0, message = "Reserved quantity cannot be negative")
-    @Column(name = "reserved", nullable = false)
-    private Long reserved = 0L;
-
-    @NotNull
-    @Min(value = 0, message = "Low stock threshold must be non-negative")
-    @Column(name = "low_stock_threshold", nullable = false)
     private Long lowStockThreshold = 10L;
-
-    @Column(name = "is_low_stock")
+    private Long reserved = 0L;
     private Boolean isLowStock = false;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
-
-    @Column(name = "created_by", length = 100)
     private String createdBy;
-
-    @Column(name = "updated_by", length = 100)
     private String updatedBy;
 
     // Constructors

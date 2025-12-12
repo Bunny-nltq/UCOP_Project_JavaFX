@@ -1,13 +1,21 @@
 package com.ucop.service;
 
-import com.ucop.entity.*;
-import com.ucop.dto.CartItemDTO;
-import com.ucop.repository.*;
-import com.ucop.util.OrderNumberGenerator;
-import com.ucop.util.PaymentCalculator;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+
+import com.ucop.Dao.CartItemDAO;
+import com.ucop.entity.Cart;
+import com.ucop.entity.CartItem;
+import com.ucop.entity.Order;
+import com.ucop.entity.OrderItem;
+import com.ucop.entity.StockItem;
+import com.ucop.repository.CartRepository;
+import com.ucop.repository.OrderRepository;
+import com.ucop.repository.ShipmentRepository;
+import com.ucop.repository.StockItemRepository;
+import com.ucop.util.OrderNumberGenerator;
 
 /**
  * Service for managing shopping carts and orders
@@ -16,22 +24,16 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
     private final StockItemRepository stockItemRepository;
-    private final PaymentRepository paymentRepository;
     private final ShipmentRepository shipmentRepository;
-    private final AppointmentRepository appointmentRepository;
 
     public OrderService(OrderRepository orderRepository,
                         CartRepository cartRepository,
                         StockItemRepository stockItemRepository,
-                        PaymentRepository paymentRepository,
-                        ShipmentRepository shipmentRepository,
-                        AppointmentRepository appointmentRepository) {
+                        ShipmentRepository shipmentRepository) {
         this.orderRepository = orderRepository;
         this.cartRepository = cartRepository;
         this.stockItemRepository = stockItemRepository;
-        this.paymentRepository = paymentRepository;
         this.shipmentRepository = shipmentRepository;
-        this.appointmentRepository = appointmentRepository;
     }
 
     /**
@@ -49,7 +51,15 @@ public class OrderService {
     /**
      * Add item to cart
      */
-    public void addToCart(Long cartId, CartItemDTO itemDTO) {
+    public void addToCart(Long cartId, CartItemDAO itemDTO) {
+        if (cartId == null || cartId <= 0) {
+            throw new IllegalArgumentException("Cart ID must be valid");
+        }
+        
+        if (itemDTO == null || itemDTO.getItemId() == null || itemDTO.getQuantity() <= 0) {
+            throw new IllegalArgumentException("Invalid cart item data");
+        }
+
         Optional<Cart> cartOpt = cartRepository.findById(cartId);
         if (cartOpt.isEmpty()) {
             throw new IllegalArgumentException("Cart not found");
@@ -65,13 +75,13 @@ public class OrderService {
         if (existingItem.isPresent()) {
             // Update quantity
             CartItem item = existingItem.get();
-            item.setQuantity(item.getQuantity() + itemDTO.getQuantity());
+            item.setQuantity(item.getQuantity() + itemDTO.getQuantity().intValue());
             item.setUpdatedAt(LocalDateTime.now());
         } else {
             // Add new item
             CartItem newItem = new CartItem(
                     itemDTO.getItemId(),
-                    itemDTO.getQuantity(),
+                    itemDTO.getQuantity().intValue(),
                     itemDTO.getUnitPrice()
             );
             cart.addItem(newItem);
@@ -85,6 +95,10 @@ public class OrderService {
      * Remove item from cart
      */
     public void removeFromCart(Long cartId, Long itemId) {
+        if (cartId == null || cartId <= 0 || itemId == null || itemId <= 0) {
+            throw new IllegalArgumentException("Cart ID and Item ID must be valid");
+        }
+
         Optional<Cart> cartOpt = cartRepository.findById(cartId);
         if (cartOpt.isEmpty()) {
             throw new IllegalArgumentException("Cart not found");
@@ -99,7 +113,7 @@ public class OrderService {
     /**
      * Update cart item quantity
      */
-    public void updateCartItemQuantity(Long cartId, Long itemId, Long newQuantity) {
+    public void updateCartItemQuantity(Long cartId, Long itemId, int newQuantity) {
         if (newQuantity <= 0) {
             removeFromCart(cartId, itemId);
             return;
@@ -150,7 +164,7 @@ public class OrderService {
         for (CartItem cartItem : cart.getItems()) {
             OrderItem orderItem = new OrderItem(
                     cartItem.getItemId(),
-                    cartItem.getQuantity(),
+                    (long) cartItem.getQuantity(),
                     cartItem.getUnitPrice()
             );
             order.addItem(orderItem);
@@ -170,25 +184,36 @@ public class OrderService {
     }
 
     /**
-     * Reserve stock for order items
+     * Reserve stock for order items with improved performance
      */
-    public void reserveStock(Long orderId) {
+    public void reserveStock(Long orderId, Long warehouseId) {
+        if (orderId == null || orderId <= 0) {
+            throw new IllegalArgumentException("Order ID must be valid");
+        }
+        
+        if (warehouseId == null || warehouseId <= 0) {
+            warehouseId = 1L; // Default to primary warehouse
+        }
+
         Optional<Order> orderOpt = orderRepository.findById(orderId);
         if (orderOpt.isEmpty()) {
             throw new IllegalArgumentException("Order not found");
         }
 
         Order order = orderOpt.get();
+        
+        // Fetch all stock items for warehouse once, not per item
+        List<StockItem> warehouseStocks = stockItemRepository.findByWarehouseId(warehouseId);
+        
         for (OrderItem item : order.getItems()) {
-            // Try to find and reserve stock from primary warehouse
-            List<StockItem> stockItems = stockItemRepository.findByWarehouseId(1L);
-            Optional<StockItem> foundStock = stockItems.stream()
+            Optional<StockItem> foundStock = warehouseStocks.stream()
                     .filter(si -> si.getItemId().equals(item.getItemId()))
                     .findFirst();
 
             if (foundStock.isEmpty() || !foundStock.get().canAllocate(item.getQuantity())) {
                 throw new IllegalStateException(
-                        "Insufficient stock for item: " + item.getItemId()
+                        "Insufficient stock for item: " + item.getItemId() + 
+                        " (required: " + item.getQuantity() + ")"
                 );
             }
 
@@ -201,20 +226,35 @@ public class OrderService {
     /**
      * Cancel order and unreserve stock
      */
-    public void cancelOrder(Long orderId) {
+    public void cancelOrder(Long orderId, Long warehouseId) {
+        if (orderId == null || orderId <= 0) {
+            throw new IllegalArgumentException("Order ID must be valid");
+        }
+        
+        if (warehouseId == null || warehouseId <= 0) {
+            warehouseId = 1L; // Default to primary warehouse
+        }
+
         Optional<Order> orderOpt = orderRepository.findById(orderId);
         if (orderOpt.isEmpty()) {
             throw new IllegalArgumentException("Order not found");
         }
 
         Order order = orderOpt.get();
+        
+        if (order.getStatus() == Order.OrderStatus.CANCELED) {
+            throw new IllegalStateException("Order is already canceled");
+        }
+        
         order.setStatus(Order.OrderStatus.CANCELED);
         order.setUpdatedAt(LocalDateTime.now());
 
+        // Fetch warehouse stocks once for efficiency
+        List<StockItem> warehouseStocks = stockItemRepository.findByWarehouseId(warehouseId);
+        
         // Unreserve stock
         for (OrderItem item : order.getItems()) {
-            List<StockItem> stockItems = stockItemRepository.findByWarehouseId(1L);
-            stockItems.stream()
+            warehouseStocks.stream()
                     .filter(si -> si.getItemId().equals(item.getItemId()))
                     .findFirst()
                     .ifPresent(stock -> {
@@ -227,21 +267,35 @@ public class OrderService {
     }
 
     /**
-     * Update order status
+     * Update order status with stock management
      */
-    public void updateOrderStatus(Long orderId, Order.OrderStatus newStatus) {
+    public void updateOrderStatus(Long orderId, Order.OrderStatus newStatus, Long warehouseId) {
+        if (orderId == null || orderId <= 0) {
+            throw new IllegalArgumentException("Order ID must be valid");
+        }
+        
+        if (newStatus == null) {
+            throw new IllegalArgumentException("Order status cannot be null");
+        }
+        
+        if (warehouseId == null || warehouseId <= 0) {
+            warehouseId = 1L; // Default to primary warehouse
+        }
+
         Optional<Order> orderOpt = orderRepository.findById(orderId);
         if (orderOpt.isEmpty()) {
             throw new IllegalArgumentException("Order not found");
         }
 
         Order order = orderOpt.get();
+        Order.OrderStatus previousStatus = order.getStatus();
         
         // When order is PAID, deduct from inventory
-        if (newStatus == Order.OrderStatus.PAID && order.getStatus() != Order.OrderStatus.PAID) {
+        if (newStatus == Order.OrderStatus.PAID && previousStatus != Order.OrderStatus.PAID) {
+            List<StockItem> warehouseStocks = stockItemRepository.findByWarehouseId(warehouseId);
+            
             for (OrderItem item : order.getItems()) {
-                List<StockItem> stockItems = stockItemRepository.findByWarehouseId(1L);
-                stockItems.stream()
+                warehouseStocks.stream()
                         .filter(si -> si.getItemId().equals(item.getItemId()))
                         .findFirst()
                         .ifPresent(stock -> {
@@ -249,29 +303,15 @@ public class OrderService {
                             stockItemRepository.update(stock);
                         });
             }
-            order.setPaidAt(LocalDateTime.now());
         }
-
-        // Update shipment status if applicable
-        if (newStatus == Order.OrderStatus.SHIPPED) {
-            order.setShippedAt(LocalDateTime.now());
-            order.getShipments().forEach(shipment -> {
-                shipment.setStatus(Shipment.ShipmentStatus.SHIPPED);
-                shipmentRepository.update(shipment);
-            });
-        }
-
-        if (newStatus == Order.OrderStatus.DELIVERED) {
-            order.setDeliveredAt(LocalDateTime.now());
-            order.getShipments().forEach(shipment -> {
-                shipment.setStatus(Shipment.ShipmentStatus.DELIVERED);
-                shipment.setActualDeliveryDate(LocalDateTime.now());
-                shipmentRepository.update(shipment);
-            });
-        }
-
+        
         order.setStatus(newStatus);
         order.setUpdatedAt(LocalDateTime.now());
+        
+        if (newStatus == Order.OrderStatus.DELIVERED) {
+            order.setDeliveredAt(LocalDateTime.now());
+        }
+        
         orderRepository.update(order);
     }
 

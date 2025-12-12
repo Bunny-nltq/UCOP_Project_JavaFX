@@ -1,96 +1,73 @@
 package com.ucop.controller;
 
-import com.ucop.dto.CartItemDTO;
+import com.ucop.Dao.CartItemDAO;
 import com.ucop.entity.Cart;
 import com.ucop.entity.Order;
 import com.ucop.service.OrderService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.*;
 
 /**
- * REST Controller for Cart operations
+ * Controller for Cart operations
  */
-@RestController
-@RequestMapping("/api/cart")
-@CrossOrigin(origins = "*")
 public class CartController {
 
-    @Autowired
     private OrderService orderService;
+    
+    public CartController(OrderService orderService) {
+        this.orderService = orderService;
+    }
 
     /**
      * Get or create cart for customer
      */
-    @PostMapping("/get-or-create/{accountId}")
-    public ResponseEntity<?> getOrCreateCart(@PathVariable Long accountId) {
+    public Cart getOrCreateCart(Long accountId) {
         try {
-            Cart cart = orderService.getOrCreateCart(accountId);
-            return ResponseEntity.ok(cart);
+            return orderService.getOrCreateCart(accountId);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Add item to cart
      */
-    @PostMapping("/{cartId}/add-item")
-    public ResponseEntity<?> addToCart(@PathVariable Long cartId, @RequestBody CartItemDTO itemDTO) {
+    public void addToCart(Long cartId, CartItemDAO itemDTO) {
         try {
             orderService.addToCart(cartId, itemDTO);
-            return ResponseEntity.ok(Map.of("message", "Item added to cart successfully"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Remove item from cart
      */
-    @DeleteMapping("/{cartId}/item/{itemId}")
-    public ResponseEntity<?> removeFromCart(@PathVariable Long cartId, @PathVariable Long itemId) {
+    public void removeFromCart(Long cartId, Long itemId) {
         try {
             orderService.removeFromCart(cartId, itemId);
-            return ResponseEntity.ok(Map.of("message", "Item removed from cart successfully"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Update cart item quantity
      */
-    @PutMapping("/{cartId}/item/{itemId}/quantity")
-    public ResponseEntity<?> updateQuantity(@PathVariable Long cartId,
-                                           @PathVariable Long itemId,
-                                           @RequestParam Long quantity) {
+    public void updateQuantity(Long cartId, Long itemId, int quantity) {
         try {
             orderService.updateCartItemQuantity(cartId, itemId, quantity);
-            return ResponseEntity.ok(Map.of("message", "Quantity updated successfully"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Place order from cart
      */
-    @PostMapping("/{cartId}/place-order")
-    public ResponseEntity<?> placeOrder(@PathVariable Long cartId) {
+    public Order placeOrder(Long cartId) {
         try {
-            Order order = orderService.placeOrder(cartId, Order.OrderStatus.PLACED);
-            return ResponseEntity.status(HttpStatus.CREATED).body(order);
+            return orderService.placeOrder(cartId, Order.OrderStatus.PLACED);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 }

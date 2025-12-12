@@ -1,180 +1,130 @@
 package com.ucop.controller;
 
-import com.ucop.entity.Shipment;
-import com.ucop.entity.Appointment;
-import com.ucop.service.ShipmentService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+
+import com.ucop.entity.Appointment;
+import com.ucop.entity.Shipment;
+import com.ucop.service.ShipmentService;
 
 /**
- * REST Controller for Shipment & Appointment Management
+ * Controller for Shipment & Appointment Management
  */
-@RestController
-@RequestMapping("/api/shipments")
-@CrossOrigin(origins = "*")
 public class ShipmentController {
 
-    @Autowired
     private ShipmentService shipmentService;
+    
+    public ShipmentController(ShipmentService shipmentService) {
+        this.shipmentService = shipmentService;
+    }
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
 
     /**
      * Create shipment
      */
-    @PostMapping("")
-    public ResponseEntity<?> createShipment(@RequestParam Long orderId,
-                                           @RequestParam String carrier,
-                                           @RequestParam(defaultValue = "1") Long warehouseId) {
+    public Shipment createShipment(Long orderId, String carrier, Long warehouseId) {
         try {
-            Shipment shipment = shipmentService.createShipment(orderId, carrier, warehouseId);
-            return ResponseEntity.status(HttpStatus.CREATED).body(shipment);
+            return shipmentService.createShipment(orderId, carrier, warehouseId);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Get shipment by ID
      */
-    @GetMapping("/{shipmentId}")
-    public ResponseEntity<?> getShipment(@PathVariable Long shipmentId) {
+    public Optional<Shipment> getShipment(Long shipmentId) {
         try {
-            Optional<Shipment> shipment = shipmentService.getShipment(shipmentId);
-            if (shipment.isPresent()) {
-                return ResponseEntity.ok(shipment.get());
-            }
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Shipment not found"));
+            return shipmentService.getShipment(shipmentId);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Track shipment
      */
-    @GetMapping("/track/{trackingNumber}")
-    public ResponseEntity<?> trackShipment(@PathVariable String trackingNumber) {
+    public Optional<Shipment> trackShipment(String trackingNumber) {
         try {
-            Optional<Shipment> shipment = shipmentService.trackShipment(trackingNumber);
-            if (shipment.isPresent()) {
-                return ResponseEntity.ok(shipment.get());
-            }
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Shipment not found"));
+            return shipmentService.trackShipment(trackingNumber);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Get shipments by order
      */
-    @GetMapping("/order/{orderId}")
-    public ResponseEntity<?> getShipmentsByOrder(@PathVariable Long orderId) {
+    public List<Shipment> getShipmentsByOrder(Long orderId) {
         try {
-            List<Shipment> shipments = shipmentService.getShipmentsByOrder(orderId);
-            return ResponseEntity.ok(shipments);
+            return shipmentService.getShipmentsByOrder(orderId);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Update shipment status
      */
-    @PutMapping("/{shipmentId}/status")
-    public ResponseEntity<?> updateShipmentStatus(@PathVariable Long shipmentId,
-                                                 @RequestParam String status) {
+    public void updateShipmentStatus(Long shipmentId, String status) {
         try {
             Shipment.ShipmentStatus shipmentStatus = Shipment.ShipmentStatus.valueOf(status);
             shipmentService.updateShipmentStatus(shipmentId, shipmentStatus);
-            return ResponseEntity.ok(Map.of("message", "Shipment status updated successfully"));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Invalid shipment status"));
+            throw new RuntimeException("Invalid shipment status", e);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Create appointment
      */
-    @PostMapping("/appointments")
-    public ResponseEntity<?> createAppointment(@RequestParam Long orderId,
-                                              @RequestParam String scheduledTime,
-                                              @RequestParam String location) {
+    public Appointment createAppointment(Long orderId, String scheduledTime, String location) {
         try {
             LocalDateTime time = LocalDateTime.parse(scheduledTime, formatter);
-            Appointment appointment = shipmentService.createAppointment(orderId, time, location);
-            return ResponseEntity.status(HttpStatus.CREATED).body(appointment);
+            return shipmentService.createAppointment(orderId, time, location);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Get appointment
      */
-    @GetMapping("/appointments/{appointmentId}")
-    public ResponseEntity<?> getAppointment(@PathVariable Long appointmentId) {
+    public Optional<Appointment> getAppointment(Long appointmentId) {
         try {
-            Optional<Appointment> appointment = shipmentService.getAppointment(appointmentId);
-            if (appointment.isPresent()) {
-                return ResponseEntity.ok(appointment.get());
-            }
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Appointment not found"));
+            return shipmentService.getAppointment(appointmentId);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Get appointments by order
      */
-    @GetMapping("/appointments/order/{orderId}")
-    public ResponseEntity<?> getAppointmentsByOrder(@PathVariable Long orderId) {
+    public List<Appointment> getAppointmentsByOrder(Long orderId) {
         try {
-            List<Appointment> appointments = shipmentService.getAppointmentsByOrder(orderId);
-            return ResponseEntity.ok(appointments);
+            return shipmentService.getAppointmentsByOrder(orderId);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Update appointment status
      */
-    @PutMapping("/appointments/{appointmentId}/status")
-    public ResponseEntity<?> updateAppointmentStatus(@PathVariable Long appointmentId,
-                                                    @RequestParam String status) {
+    public void updateAppointmentStatus(Long appointmentId, String status) {
         try {
             Appointment.AppointmentStatus appointmentStatus = Appointment.AppointmentStatus.valueOf(status);
             shipmentService.updateAppointmentStatus(appointmentId, appointmentStatus);
-            return ResponseEntity.ok(Map.of("message", "Appointment status updated successfully"));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Invalid appointment status"));
+            throw new RuntimeException("Invalid appointment status", e);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 }

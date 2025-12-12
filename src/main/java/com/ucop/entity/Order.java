@@ -1,11 +1,22 @@
 package com.ucop.entity;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "orders")
@@ -13,104 +24,102 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @NotNull
-    @Column(name = "account_id", nullable = false)
+    
+    @Column(nullable = false)
     private Long accountId;
-
-    @NotNull
-    @Column(name = "status", nullable = false, length = 50)
+    
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private OrderStatus status = OrderStatus.CART;
-
-    @Column(name = "order_number", unique = true, length = 50)
+    
+    @Column(nullable = false, unique = true)
     private String orderNumber;
 
     // Customer Information
-    @Column(name = "shipping_name", length = 100)
+    @Column
     private String shippingName;
-
-    @Column(name = "shipping_phone", length = 20)
+    
+    @Column
     private String shippingPhone;
-
-    @Column(name = "shipping_address", length = 255)
+    
+    @Column
     private String shippingAddress;
-
-    @Column(name = "shipping_city", length = 50)
+    
+    @Column
     private String shippingCity;
-
-    @Column(name = "shipping_postal_code", length = 20)
+    
+    @Column
     private String shippingPostalCode;
 
     // Amount Calculations
-    @Column(name = "subtotal", nullable = false, precision = 19, scale = 4)
+    @Column(nullable = false)
     private BigDecimal subtotal = BigDecimal.ZERO;
-
-    @Column(name = "item_discount", nullable = false, precision = 19, scale = 4)
+    
+    @Column(nullable = false)
     private BigDecimal itemDiscount = BigDecimal.ZERO;
-
-    @Column(name = "cart_discount", nullable = false, precision = 19, scale = 4)
+    
+    @Column(nullable = false)
     private BigDecimal cartDiscount = BigDecimal.ZERO;
-
-    @Column(name = "tax_amount", nullable = false, precision = 19, scale = 4)
+    
+    @Column(nullable = false)
     private BigDecimal taxAmount = BigDecimal.ZERO;
-
-    @Column(name = "shipping_fee", nullable = false, precision = 19, scale = 4)
+    
+    @Column(nullable = false)
     private BigDecimal shippingFee = BigDecimal.ZERO;
-
-    @Column(name = "cod_fee", nullable = false, precision = 19, scale = 4)
+    
+    @Column(nullable = false)
     private BigDecimal codFee = BigDecimal.ZERO;
-
-    @Column(name = "gateway_fee", nullable = false, precision = 19, scale = 4)
+    
+    @Column(nullable = false)
     private BigDecimal gatewayFee = BigDecimal.ZERO;
-
-    @Column(name = "grand_total", nullable = false, precision = 19, scale = 4)
+    
+    @Column(nullable = false)
     private BigDecimal grandTotal = BigDecimal.ZERO;
-
-    @Column(name = "amount_due", nullable = false, precision = 19, scale = 4)
+    
+    @Column(nullable = false)
     private BigDecimal amountDue = BigDecimal.ZERO;
 
     // Promotion
-    @Column(name = "promotion_code", length = 50)
+    @Column
     private String promotionCode;
-
-    @Column(name = "notes", length = 500)
+    
+    @Column
     private String notes;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
+    
+    @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at")
+    
+    @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
-
-    @Column(name = "created_by", length = 100)
+    
+    @Column
     private String createdBy;
-
-    @Column(name = "updated_by", length = 100)
+    
+    @Column
     private String updatedBy;
-
-    @Column(name = "placed_at")
+    
+    @Column
     private LocalDateTime placedAt;
-
-    @Column(name = "paid_at")
+    
+    @Column
     private LocalDateTime paidAt;
-
-    @Column(name = "shipped_at")
+    
+    @Column
     private LocalDateTime shippedAt;
-
-    @Column(name = "delivered_at")
+    
+    @Column
     private LocalDateTime deliveredAt;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private Set<OrderItem> items = new HashSet<>();
-
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private Set<Payment> payments = new HashSet<>();
-
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private Set<Shipment> shipments = new HashSet<>();
-
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private Set<Appointment> appointments = new HashSet<>();
 
     // Constructors
@@ -156,6 +165,19 @@ public class Order {
         total = total.add(codFee);
         total = total.add(gatewayFee);
         return total;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Order order = (Order) o;
+        return Objects.equals(id, order.id) && Objects.equals(orderNumber, order.orderNumber);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, orderNumber);
     }
 
     // Getters & Setters

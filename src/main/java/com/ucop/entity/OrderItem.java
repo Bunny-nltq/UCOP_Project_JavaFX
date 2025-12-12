@@ -1,43 +1,16 @@
 package com.ucop.entity;
 
-import javax.persistence.*;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "order_items")
 public class OrderItem {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
-
-    @NotNull
-    @Column(name = "item_id", nullable = false)
     private Long itemId;
-
-    @NotNull
-    @Min(value = 1)
-    @Column(nullable = false)
     private Long quantity;
-
-    @NotNull
-    @Column(name = "unit_price", nullable = false, precision = 19, scale = 4)
     private BigDecimal unitPrice;
-
-    @Column(name = "item_discount", precision = 19, scale = 4)
     private BigDecimal itemDiscount = BigDecimal.ZERO;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     // Constructors

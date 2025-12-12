@@ -1,51 +1,20 @@
 package com.ucop.entity;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "appointments")
 public class Appointment {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
-
-    @Column(name = "appointment_number", unique = true, length = 100)
     private String appointmentNumber;
-
-    @Column(name = "scheduled_time", nullable = false)
     private LocalDateTime scheduledTime;
-
-    @Column(name = "actual_time")
     private LocalDateTime actualTime;
-
-    @Column(name = "location", length = 255)
     private String location;
-
-    @Column(name = "status", nullable = false, length = 50)
-    @Enumerated(EnumType.STRING)
     private AppointmentStatus status = AppointmentStatus.SCHEDULED;
-
-    @Column(name = "service_provider", length = 100)
     private String serviceProvider;
-
-    @Column(name = "notes", length = 500)
     private String notes;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
-
-    @Column(name = "created_by", length = 100)
     private String createdBy;
-
-    @Column(name = "updated_by", length = 100)
     private String updatedBy;
 
     // Constructors

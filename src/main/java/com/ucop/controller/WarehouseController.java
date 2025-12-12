@@ -1,165 +1,125 @@
 package com.ucop.controller;
 
-import com.ucop.entity.Warehouse;
-import com.ucop.entity.StockItem;
-import com.ucop.service.WarehouseService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-import java.util.*;
+import com.ucop.entity.StockItem;
+import com.ucop.entity.Warehouse;
+import com.ucop.service.WarehouseService;
 
 /**
- * REST Controller for Warehouse & Stock Management
+ * Controller for Warehouse & Stock Management
  */
-@RestController
-@RequestMapping("/api/warehouses")
-@CrossOrigin(origins = "*")
 public class WarehouseController {
 
-    @Autowired
     private WarehouseService warehouseService;
+    
+    public WarehouseController(WarehouseService warehouseService) {
+        this.warehouseService = warehouseService;
+    }
 
     /**
      * Create warehouse
      */
-    @PostMapping("")
-    public ResponseEntity<?> createWarehouse(@RequestParam String name,
-                                            @RequestParam String address,
-                                            @RequestParam String phone) {
+    public Warehouse createWarehouse(String name, String address, String phone) {
         try {
-            Warehouse warehouse = warehouseService.createWarehouse(name, address, phone);
-            return ResponseEntity.status(HttpStatus.CREATED).body(warehouse);
+            return warehouseService.createWarehouse(name, address, phone);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Get all warehouses
      */
-    @GetMapping("")
-    public ResponseEntity<?> getAllWarehouses() {
+    public List<Warehouse> getAllWarehouses() {
         try {
-            List<Warehouse> warehouses = warehouseService.getAllWarehouses();
-            return ResponseEntity.ok(warehouses);
+            return warehouseService.getAllWarehouses();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Get active warehouses
      */
-    @GetMapping("/active")
-    public ResponseEntity<?> getActiveWarehouses() {
+    public List<Warehouse> getActiveWarehouses() {
         try {
-            List<Warehouse> warehouses = warehouseService.getActiveWarehouses();
-            return ResponseEntity.ok(warehouses);
+            return warehouseService.getActiveWarehouses();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Get warehouse by ID
      */
-    @GetMapping("/{warehouseId}")
-    public ResponseEntity<?> getWarehouse(@PathVariable Long warehouseId) {
+    public Optional<Warehouse> getWarehouse(Long warehouseId) {
         try {
-            Optional<Warehouse> warehouse = warehouseService.getWarehouse(warehouseId);
-            if (warehouse.isPresent()) {
-                return ResponseEntity.ok(warehouse.get());
-            }
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Warehouse not found"));
+            return warehouseService.getWarehouse(warehouseId);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Get low stock items
      */
-    @GetMapping("/low-stock")
-    public ResponseEntity<?> getLowStockItems() {
+    public List<StockItem> getLowStockItems() {
         try {
-            List<StockItem> items = warehouseService.getLowStockItems();
-            return ResponseEntity.ok(items);
+            return warehouseService.getLowStockItems();
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Get stock items for warehouse
      */
-    @GetMapping("/{warehouseId}/stock")
-    public ResponseEntity<?> getStockItems(@PathVariable Long warehouseId) {
+    public List<StockItem> getStockItems(Long warehouseId) {
         try {
-            List<StockItem> items = warehouseService.getStockItemsByWarehouse(warehouseId);
-            return ResponseEntity.ok(items);
+            return warehouseService.getStockItemsByWarehouse(warehouseId);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Add stock item
      */
-    @PostMapping("/{warehouseId}/stock")
-    public ResponseEntity<?> addStockItem(@PathVariable Long warehouseId,
-                                         @RequestParam Long itemId,
-                                         @RequestParam Long onHand,
-                                         @RequestParam(defaultValue = "10") Long lowStockThreshold) {
+    public StockItem addStockItem(Long warehouseId, Long itemId, Long onHand, Long lowStockThreshold) {
         try {
-            StockItem item = warehouseService.addStockItem(warehouseId, itemId, onHand, lowStockThreshold);
-            return ResponseEntity.status(HttpStatus.CREATED).body(item);
+            return warehouseService.addStockItem(warehouseId, itemId, onHand, lowStockThreshold);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Update stock quantity
      */
-    @PutMapping("/stock/{stockItemId}/quantity")
-    public ResponseEntity<?> updateStockQuantity(@PathVariable Long stockItemId,
-                                                @RequestParam Long newQuantity) {
+    public void updateStockQuantity(Long stockItemId, Long newQuantity) {
         try {
             warehouseService.updateStockQuantity(stockItemId, newQuantity);
-            return ResponseEntity.ok(Map.of("message", "Stock quantity updated successfully"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Check stock availability
      */
-    @GetMapping("/{warehouseId}/check-availability")
-    public ResponseEntity<?> checkStockAvailability(@PathVariable Long warehouseId,
-                                                   @RequestParam Long itemId,
-                                                   @RequestParam Long requiredQuantity) {
+    public Map<String, Object> checkStockAvailability(Long warehouseId, Long itemId, Long requiredQuantity) {
         try {
             boolean available = warehouseService.isStockAvailable(warehouseId, itemId, requiredQuantity);
             Long availableQty = warehouseService.getAvailableQuantity(warehouseId, itemId);
-            return ResponseEntity.ok(Map.of(
+            return Map.of(
                     "available", available,
                     "availableQuantity", availableQty
-            ));
+            );
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 }

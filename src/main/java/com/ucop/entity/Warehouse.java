@@ -1,44 +1,19 @@
 package com.ucop.entity;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-@Entity
-@Table(name = "warehouses")
 public class Warehouse {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @NotBlank(message = "Warehouse name cannot be blank")
-    @Column(nullable = false, length = 100)
     private String name;
-
-    @Column(length = 255)
     private String address;
-
-    @Column(length = 20)
     private String phone;
-
-    @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
-
-    @Column(name = "created_by", length = 100)
     private String createdBy;
-
-    @Column(name = "updated_by", length = 100)
     private String updatedBy;
-
-    @OneToMany(mappedBy = "warehouse", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<StockItem> stockItems = new HashSet<>();
 
     // Constructors

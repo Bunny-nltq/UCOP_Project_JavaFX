@@ -1,9 +1,18 @@
 package com.ucop.entity;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "carts")
@@ -11,17 +20,17 @@ public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "account_id", nullable = false)
+    
+    @Column(nullable = false)
     private Long accountId;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
+    
+    @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at")
+    
+    @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
-
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private Set<CartItem> items = new HashSet<>();
 
     // Constructors
@@ -50,7 +59,12 @@ public class Cart {
     }
 
     public int getItemCount() {
-        return items.stream().mapToInt(item -> item.getQuantity().intValue()).sum();
+        if (items == null || items.isEmpty()) {
+            return 0;
+        }
+        return items.stream()
+                .mapToInt(item -> item.getQuantity() > 0 ? item.getQuantity() : 0)
+                .sum();
     }
 
     // Getters & Setters

@@ -1,133 +1,101 @@
 package com.ucop.controller;
 
-import com.ucop.dto.PaymentCalculationDTO;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
+import com.ucop.Dao.PaymentCalculationDAO;
 import com.ucop.entity.Payment;
 import com.ucop.service.PaymentService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
-import java.util.*;
 
 /**
- * REST Controller for Payment operations
+ * Controller for Payment operations
  */
-@RestController
-@RequestMapping("/api/payments")
-@CrossOrigin(origins = "*")
 public class PaymentController {
 
-    @Autowired
     private PaymentService paymentService;
+    
+    public PaymentController(PaymentService paymentService) {
+        this.paymentService = paymentService;
+    }
 
     /**
      * Calculate payment breakdown
      */
-    @PostMapping("/calculate")
-    public ResponseEntity<?> calculatePayment(@RequestParam BigDecimal subtotal,
-                                             @RequestParam(defaultValue = "0") BigDecimal itemDiscount,
-                                             @RequestParam(defaultValue = "0") BigDecimal cartDiscount,
-                                             @RequestParam String paymentMethod) {
+    public PaymentCalculationDAO calculatePayment(BigDecimal subtotal,
+                                             BigDecimal itemDiscount,
+                                             BigDecimal cartDiscount,
+                                             String paymentMethod) {
         try {
             Payment.PaymentMethod method = Payment.PaymentMethod.valueOf(paymentMethod);
-            PaymentCalculationDTO calculation = paymentService.calculatePayment(
-                    subtotal, itemDiscount, cartDiscount, method
-            );
-            return ResponseEntity.ok(calculation);
+            return paymentService.calculatePayment(subtotal, itemDiscount, cartDiscount, method);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Invalid payment method"));
+            throw new RuntimeException("Invalid payment method", e);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Create payment
      */
-    @PostMapping("")
-    public ResponseEntity<?> createPayment(@RequestParam Long orderId,
-                                          @RequestParam String paymentMethod,
-                                          @RequestParam BigDecimal amount) {
+    public Payment createPayment(Long orderId,
+                                 String paymentMethod,
+                                 BigDecimal amount) {
         try {
             Payment.PaymentMethod method = Payment.PaymentMethod.valueOf(paymentMethod);
-            Payment payment = paymentService.createPayment(orderId, method, amount);
-            return ResponseEntity.status(HttpStatus.CREATED).body(payment);
+            return paymentService.createPayment(orderId, method, amount);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Invalid payment method"));
+            throw new RuntimeException("Invalid payment method", e);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Process payment
      */
-    @PostMapping("/{paymentId}/process")
-    public ResponseEntity<?> processPayment(@PathVariable Long paymentId,
-                                           @RequestParam(defaultValue = "true") boolean success) {
+    public Payment processPayment(Long paymentId, boolean success) {
         try {
-            Payment payment = paymentService.processPayment(paymentId, success);
-            return ResponseEntity.ok(payment);
+            return paymentService.processPayment(paymentId, success);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Get payment by ID
      */
-    @GetMapping("/{paymentId}")
-    public ResponseEntity<?> getPayment(@PathVariable Long paymentId) {
+    public Optional<Payment> getPayment(Long paymentId) {
         try {
-            Optional<Payment> payment = paymentService.getPaymentById(paymentId);
-            if (payment.isPresent()) {
-                return ResponseEntity.ok(payment.get());
-            }
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Payment not found"));
+            return paymentService.getPaymentById(paymentId);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Get payments by order
      */
-    @GetMapping("/order/{orderId}")
-    public ResponseEntity<?> getPaymentsByOrder(@PathVariable Long orderId) {
+    public List<Payment> getPaymentsByOrder(Long orderId) {
         try {
-            List<Payment> payments = paymentService.getPaymentsByOrderId(orderId);
-            return ResponseEntity.ok(payments);
+            return paymentService.getPaymentsByOrderId(orderId);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Update payment status
      */
-    @PutMapping("/{paymentId}/status")
-    public ResponseEntity<?> updatePaymentStatus(@PathVariable Long paymentId,
-                                                @RequestParam String status) {
+    public void updatePaymentStatus(Long paymentId, String status) {
         try {
             Payment.PaymentStatus paymentStatus = Payment.PaymentStatus.valueOf(status);
             paymentService.updatePaymentStatus(paymentId, paymentStatus);
-            return ResponseEntity.ok(Map.of("message", "Payment status updated successfully"));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "Invalid payment status"));
+            throw new RuntimeException("Invalid payment status", e);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 }

@@ -1,8 +1,8 @@
-package com.ucop.dto;
+package com.ucop.Dao;
 
 import java.math.BigDecimal;
 
-public class PaymentCalculationDTO {
+public class PaymentCalculationDAO {
     private BigDecimal subtotal;
     private BigDecimal itemDiscount;
     private BigDecimal cartDiscount;
@@ -13,10 +13,10 @@ public class PaymentCalculationDTO {
     private BigDecimal grandTotal;
     private BigDecimal amountDue;
 
-    public PaymentCalculationDTO() {
+    public PaymentCalculationDAO() {
     }
 
-    public PaymentCalculationDTO(BigDecimal subtotal, BigDecimal itemDiscount, BigDecimal cartDiscount,
+    public PaymentCalculationDAO(BigDecimal subtotal, BigDecimal itemDiscount, BigDecimal cartDiscount,
                                   BigDecimal taxAmount, BigDecimal shippingFee, BigDecimal codFee,
                                   BigDecimal gatewayFee) {
         this.subtotal = subtotal;

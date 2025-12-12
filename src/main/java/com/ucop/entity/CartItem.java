@@ -1,10 +1,18 @@
 package com.ucop.entity;
 
-import javax.persistence.*;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "cart_items")
@@ -12,36 +20,31 @@ public class CartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @NotNull
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
-
-    @NotNull
-    @Column(name = "item_id", nullable = false)
-    private Long itemId;
-
-    @NotNull
-    @Min(value = 1, message = "Quantity must be at least 1")
+    
     @Column(nullable = false)
-    private Long quantity;
-
-    @NotNull
-    @Column(name = "unit_price", nullable = false, precision = 19, scale = 4)
+    private Long itemId;
+    
+    @Column(nullable = false)
+    private int quantity;
+    
+    @Column(nullable = false)
     private BigDecimal unitPrice;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
+    
+    @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at")
+    
+    @Column(nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     // Constructors
     public CartItem() {
     }
 
-    public CartItem(Long itemId, Long quantity, BigDecimal unitPrice) {
+    public CartItem(Long itemId, int quantity, BigDecimal unitPrice) {
         this.itemId = itemId;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
@@ -49,7 +52,23 @@ public class CartItem {
 
     // Business methods
     public BigDecimal getSubtotal() {
+        if (unitPrice == null) {
+            return BigDecimal.ZERO;
+        }
         return unitPrice.multiply(new BigDecimal(quantity));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CartItem cartItem = (CartItem) o;
+        return Objects.equals(id, cartItem.id) && Objects.equals(itemId, cartItem.itemId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, itemId);
     }
 
     // Getters & Setters
@@ -77,11 +96,11 @@ public class CartItem {
         this.itemId = itemId;
     }
 
-    public Long getQuantity() {
+    public int getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(Long quantity) {
+    public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
 
