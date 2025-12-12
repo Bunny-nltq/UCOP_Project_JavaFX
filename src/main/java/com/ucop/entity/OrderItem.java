@@ -7,7 +7,7 @@ public class OrderItem {
     private Long id;
     private Order order;
     private Long itemId;
-    private Long quantity;
+    private Integer quantity;
     private BigDecimal unitPrice;
     private BigDecimal itemDiscount = BigDecimal.ZERO;
     private LocalDateTime createdAt = LocalDateTime.now();
