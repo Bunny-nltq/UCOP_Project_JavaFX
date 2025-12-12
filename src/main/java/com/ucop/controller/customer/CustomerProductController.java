@@ -1,29 +1,35 @@
 package com.ucop.controller.customer;
 
-import com.ucop.entity.Item;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.ucop.dao.CartItemDTO;
 import com.ucop.entity.Cart;
-import com.ucop.service.ItemService;
+import com.ucop.entity.Item;
 import com.ucop.service.OrderService;
-import com.ucop.dao.CartItemDAO;
+import com.ucop.service.ProductService;
+
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Controller cho Customer Product Listing
@@ -44,7 +50,7 @@ public class CustomerProductController {
     @FXML private Button btnNext;
     @FXML private Button btnLast;
 
-    private ItemService productService;
+    private ProductService productService;
     private OrderService orderService;
     private List<Item> allProducts = new ArrayList<>();
     private List<Item> filteredProducts = new ArrayList<>();
@@ -87,10 +93,10 @@ public class CustomerProductController {
     /**
      * Set services (dependency injection)
      */
-    public void setServices(ItemService productService, OrderService orderService) {
+    public void setServices(ProductService productService, OrderService orderService) {
         this.productService = productService;
         this.orderService = orderService;
-        
+
         // Load data after services are set
         loadProducts();
         loadCart();
@@ -298,7 +304,7 @@ public class CustomerProductController {
             }
 
             // Add to cart
-            CartItemDAO itemDTO = new CartItemDAO();
+            CartItemDTO itemDTO = new CartItemDTO();
             itemDTO.setItemId(product.getId());
             itemDTO.setQuantity(1);
             itemDTO.setUnitPrice(product.getPrice());

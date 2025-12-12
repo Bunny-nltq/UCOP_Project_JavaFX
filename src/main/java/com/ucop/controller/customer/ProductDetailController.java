@@ -1,10 +1,11 @@
 package com.ucop.controller.customer;
 
 import com.ucop.entity.Item;
+import com.ucop.dao.CartItemDTO;
 import com.ucop.entity.Cart;
-import com.ucop.service.ItemService;
+import com.ucop.service.ProductService;
 import com.ucop.service.OrderService;
-import com.ucop.dao.CartItemDAO;
+
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -35,7 +36,7 @@ public class ProductDetailController {
     @FXML private StackPane imageContainer;
 
     private Item product;
-    private ItemService productService;
+    private ProductService productService;
     private OrderService orderService;
     private Long currentAccountId;
     private Cart currentCart;
@@ -62,7 +63,7 @@ public class ProductDetailController {
     /**
      * Set services
      */
-    public void setServices(ItemService productService, OrderService orderService) {
+    public void setServices(ProductService productService, OrderService orderService) {
         this.productService = productService;
         this.orderService = orderService;
     }
@@ -172,7 +173,7 @@ public class ProductDetailController {
             }
 
             // Add to cart
-            CartItemDAO itemDTO = new CartItemDAO();
+            CartItemDTO itemDTO = new CartItemDTO();
             itemDTO.setItemId(product.getId());
             itemDTO.setQuantity(quantity);
             itemDTO.setUnitPrice(product.getPrice());
