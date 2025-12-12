@@ -1,9 +1,9 @@
 package com.ucop.service;
 
+import java.util.List;
+
 import com.ucop.dao.ItemDAO;
 import com.ucop.entity.Item;
-
-import java.util.List;
 
 public class ItemService {
 
@@ -31,7 +31,7 @@ public class ItemService {
 
         audit.log(
                 "Item",
-                item.getId().longValue(),
+                item.getId(),
                 "CREATE",
                 null,
                 item,
@@ -42,7 +42,7 @@ public class ItemService {
     // ========================= UPDATE =========================
     public void update(Item newItem) {
 
-        Item oldItem = dao.findById(newItem.getId());
+        Item oldItem = dao.findById(newItem.getId().intValue());
         if (oldItem == null) {
             throw new IllegalArgumentException("Item not found!");
         }

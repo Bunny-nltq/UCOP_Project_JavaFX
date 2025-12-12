@@ -1,7 +1,9 @@
 package com.ucop.controller.staff;
 
 import com.ucop.entity.Order;
+import com.ucop.entity.Item;
 import com.ucop.service.OrderService;
+import com.ucop.service.ProductService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -57,6 +59,7 @@ public class StaffOrderController {
     private ComboBox<String> statusUpdateCombo;
 
     private OrderService orderService;
+    private ProductService productService;
     private ObservableList<Order> orders;
 
     @FXML
@@ -72,6 +75,10 @@ public class StaffOrderController {
     public void setOrderService(OrderService orderService) {
         this.orderService = orderService;
         loadOrders();
+    }
+
+    public void setItemService(ItemService itemService) {
+        this.itemService = itemService;
     }
 
     private void setupTableColumns() {
@@ -191,10 +198,21 @@ public class StaffOrderController {
 
         if (order.getItems() != null && !order.getItems().isEmpty()) {
             details.append("Chi tiết sản phẩm:\n");
-            for (var item : order.getItems()) {
-                details.append("- ").append(item.getItemName() != null ? item.getItemName() : "N/A")
-                       .append(" (SL: ").append(item.getQuantity())
-                       .append(", ĐG: ").append(String.format("%,.0f", item.getUnitPrice())).append(" VNĐ)\n");
+            for (var orderItem : order.getItems()) {
+                String itemName = "N/A";
+                if (productService != null && orderItem.getItemId() != null) {
+                    try {
+                        Item item = productService.getProductById(orderItem.getItemId()).orElse(null);
+                        if (item != null) {
+                            itemName = item.getName();
+                        }
+                    } catch (Exception e) {
+                        // Keep default "N/A" if item not found
+                    }
+                }
+                details.append("- ").append(itemName)
+                       .append(" (SL: ").append(orderItem.getQuantity())
+                       .append(", ĐG: ").append(String.format("%,.0f", orderItem.getUnitPrice())).append(" VNĐ)\n");
             }
             details.append("\n");
         }

@@ -52,10 +52,8 @@ public class OrderService {
             throw new IllegalArgumentException("Invalid cart item data");
         }
 
-        Optional<Cart> cartOpt = cartRepository.findById(cartId);
-        if (cartOpt.isEmpty()) {
-            throw new IllegalArgumentException("Cart not found");
-        }
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new IllegalArgumentException("Cart not found"));
 
         Optional<CartItem> existingItem = cart.getItems().stream()
                 .filter(item -> item.getItemId().equals(itemDTO.getItemId()))
@@ -63,12 +61,11 @@ public class OrderService {
 
         if (existingItem.isPresent()) {
             CartItem item = existingItem.get();
-            item.setQuantity(item.getQuantity() + itemDTO.getQuantity().intValue());
-            item.setUpdatedAt(LocalDateTime.now());
+            item.setQuantity(item.getQuantity() + itemDTO.getQuantity());
         } else {
             CartItem newItem = new CartItem(
                     itemDTO.getItemId(),
-                    itemDTO.getQuantity().intValue(),
+                    itemDTO.getQuantity(),
                     itemDTO.getUnitPrice()
             );
             cart.addItem(newItem);
@@ -111,7 +108,7 @@ public class OrderService {
         cart.getItems().stream()
                 .filter(item -> item.getItemId().equals(itemId))
                 .findFirst()
-                .ifPresent(item -> item.setQuantity(newQuantity.intValue()));
+                .ifPresent(item -> item.setQuantity(newQuantity));
 
         cartRepository.update(cart);
     }
@@ -136,7 +133,7 @@ public class OrderService {
         for (CartItem cartItem : cart.getItems()) {
             OrderItem orderItem = new OrderItem(
                     cartItem.getItemId(),
-                    (long) cartItem.getQuantity(),
+                    cartItem.getQuantity(),
                     cartItem.getUnitPrice()
             );
             order.addItem(orderItem);
@@ -180,13 +177,14 @@ public class OrderService {
                     .filter(si -> si.getItemId().equals(item.getItemId()))
                     .findFirst();
 
-            if (foundStock.isEmpty() || !foundStock.get().canAllocate(item.getQuantity())) {
+            if (foundStock.isEmpty() || !foundStock.get().canAllocate(item.getQuantity().longValue())) {
                 throw new IllegalStateException(
                         "Insufficient stock for item: " + item.getItemId() + 
                         " (required: " + item.getQuantity() + ")"
                 );
             }
 
+            StockItem stock = foundStock.get();
             stock.reserve(item.getQuantity().longValue());
             stockItemRepository.update(stock);
         }

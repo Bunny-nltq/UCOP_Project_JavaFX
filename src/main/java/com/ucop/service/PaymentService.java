@@ -107,8 +107,6 @@ public class PaymentService {
 
         Payment payment = new Payment(order, method, amount);
         payment.setStatus(Payment.PaymentStatus.PENDING);
-        payment.setCreatedAt(LocalDateTime.now());
-        payment.setUpdatedAt(LocalDateTime.now());
 
         return paymentRepository.save(payment);
     }

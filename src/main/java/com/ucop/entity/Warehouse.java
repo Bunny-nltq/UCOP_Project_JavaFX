@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+
 public class Warehouse {
     private Long id;
     private String name;

@@ -3,6 +3,9 @@ package com.ucop.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+
 public class OrderItem {
     private Long id;
     private Order order;

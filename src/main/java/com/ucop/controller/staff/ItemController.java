@@ -1,5 +1,7 @@
 package com.ucop.controller.staff;
 
+import java.math.BigDecimal;
+
 import com.ucop.entity.Category;
 import com.ucop.entity.Item;
 import com.ucop.service.CategoryService;
@@ -9,9 +11,12 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-
-import java.math.BigDecimal;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 
 public class ItemController {
 
@@ -19,7 +24,7 @@ public class ItemController {
     @FXML private ComboBox<Category> cbCategory;
 
     @FXML private TableView<Item> tbl;
-    @FXML private TableColumn<Item, Integer> colId;
+    @FXML private TableColumn<Item, Long> colId;
     @FXML private TableColumn<Item, String> colSku;
     @FXML private TableColumn<Item, String> colName;
     @FXML private TableColumn<Item, BigDecimal> colPrice;

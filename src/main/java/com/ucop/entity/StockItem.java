@@ -2,6 +2,9 @@ package com.ucop.entity;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+
 public class StockItem {
     private Long id;
     private Warehouse warehouse;

@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.ucop.dao.CartItemDTO;
 import com.ucop.entity.Cart;
 import com.ucop.entity.Item;
 import com.ucop.service.OrderService;
@@ -305,7 +304,7 @@ public class CustomerProductController {
             }
 
             // Add to cart
-            CartItemDTO itemDTO = new CartItemDTO();
+            CartItemDAO itemDTO = new CartItemDAO();
             itemDTO.setItemId(product.getId());
             itemDTO.setQuantity(1);
             itemDTO.setUnitPrice(product.getPrice());
