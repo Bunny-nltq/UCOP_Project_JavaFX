@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.image.ImageView?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" 
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.ucop.controller.customer.CustomerItemsController"
+            style="-fx-background-color: #f5f5f5;">
+    
+    <!-- Top - Search and Filter Bar -->
+    <top>
+        <VBox spacing="10" style="-fx-padding: 20; -fx-background-color: white;">
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <TextField fx:id="txtSearch" promptText="🔍 Tìm kiếm sản phẩm..." 
+                           prefWidth="300" 
+                           style="-fx-font-size: 14px; -fx-padding: 10;"/>
+                
+                <ComboBox fx:id="cboCategory" promptText="Danh mục" 
+                          prefWidth="180"
+                          style="-fx-font-size: 14px;"/>
+                
+                <Button text="🔍 Tìm kiếm" onAction="#handleSearch"
+                        style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20; -fx-font-weight: bold;"/>
+                
+                <Button text="🔄 Làm mới" onAction="#handleRefresh"
+                        style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20;"/>
+                
+                <Region HBox.hgrow="ALWAYS"/>
+                
+                <Label text="Sắp xếp:"/>
+                <ComboBox fx:id="cboSort" prefWidth="150"
+                          style="-fx-font-size: 14px;"/>
+            </HBox>
+            
+            <!-- Stats Bar -->
+            <HBox spacing="20" alignment="CENTER_LEFT" style="-fx-padding: 10 0 0 0;">
+                <Label fx:id="lblTotalItems" text="Tổng: 0 sản phẩm" 
+                       style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <Separator orientation="VERTICAL" prefHeight="20"/>
+                <Label fx:id="lblStatus" text="✓ Dữ liệu đã tải" 
+                       style="-fx-text-fill: green; -fx-font-size: 13px;"/>
+            </HBox>
+        </VBox>
+    </top>
+    
+    <!-- Center - Product Grid -->
+    <center>
+        <ScrollPane fitToWidth="true" fitToHeight="true" 
+                    style="-fx-background: #f5f5f5; -fx-background-color: #f5f5f5;">
+            <VBox style="-fx-padding: 20;">
+                <!-- Products Container (GridPane will be added dynamically) -->
+                <GridPane fx:id="gridProducts" 
+                          hgap="25" vgap="25"
+                          alignment="TOP_LEFT"
+                          style="-fx-padding: 10;"/>
+                
+                <!-- Empty State -->
+                <VBox fx:id="emptyState" alignment="CENTER" spacing="20" 
+                      style="-fx-padding: 100;" 
+                      visible="false" managed="false">
+                    <Label text="📦" style="-fx-font-size: 64px;"/>
+                    <Label text="Không tìm thấy sản phẩm" 
+                           style="-fx-font-size: 18px; -fx-text-fill: #666;"/>
+                    <Label text="Vui lòng thử tìm kiếm với từ khóa khác" 
+                           style="-fx-font-size: 14px; -fx-text-fill: #999;"/>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+    
+    <!-- Bottom - Pagination -->
+    <bottom>
+        <HBox alignment="CENTER" spacing="15" 
+              style="-fx-background-color: white; -fx-padding: 15;">
+            <Button fx:id="btnFirst" text="⏮ Đầu" onAction="#handleFirst"
+                    style="-fx-font-size: 13px;"/>
+            <Button fx:id="btnPrev" text="◀ Trước" onAction="#handlePrevious"
+                    style="-fx-font-size: 13px;"/>
+            <Label fx:id="lblPage" text="Trang 1 / 1"
+                   style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+            <Button fx:id="btnNext" text="Sau ▶" onAction="#handleNext"
+                    style="-fx-font-size: 13px;"/>
+            <Button fx:id="btnLast" text="Cuối ⏭" onAction="#handleLast"
+                    style="-fx-font-size: 13px;"/>
+            
+            <Separator orientation="VERTICAL" prefHeight="20"/>
+            
+            <Label text="Hiển thị:"/>
+            <ComboBox fx:id="cboPageSize" prefWidth="80"
+                      style="-fx-font-size: 13px;"/>
+            <Label text="sản phẩm/trang"/>
+        </HBox>
+    </bottom>
+    
+</BorderPane>

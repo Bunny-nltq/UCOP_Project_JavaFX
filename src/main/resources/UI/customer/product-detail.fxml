@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.ucop.controller.customer.ProductDetailController"
+            style="-fx-background-color: #f5f5f5;">
+    
+    <!-- Top Bar -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: #3F51B5; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 2);">
+            <Button fx:id="btnBack" text="◀ Quay lại" onAction="#handleClose" style="-fx-background-color: #303F9F; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-cursor: hand; -fx-font-size: 14px;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="🔍 Chi Tiết Sản Phẩm" textFill="white" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </top>
+    
+    <!-- Center - Product Details with Left/Right Layout -->
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background: #f5f5f5;">
+            <HBox spacing="30" style="-fx-padding: 30; -fx-background-color: white; -fx-alignment: TOP_CENTER;">
+                
+                <!-- Left Side - Product Image -->
+                <VBox alignment="TOP_CENTER" spacing="15" prefWidth="450" style="-fx-background-color: white; -fx-padding: 30; -fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-border-radius: 12; -fx-background-radius: 12;">
+                    <StackPane fx:id="imageContainer" prefWidth="380" prefHeight="380" style="-fx-background-color: #f9f9f9; -fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-border-radius: 8; -fx-background-radius: 8;">
+                        <Label text="📦" style="-fx-font-size: 120px; -fx-text-fill: #bdc3c7;"/>
+                    </StackPane>
+                    <Label text="Hình ảnh sản phẩm" style="-fx-font-size: 12px; -fx-text-fill: #7f8c8d; -fx-font-family: 'Arial';"/>
+                </VBox>
+                
+                <!-- Right Side - Product Information -->
+                <VBox spacing="20" HBox.hgrow="ALWAYS" prefWidth="550" style="-fx-padding: 10 20;">
+                    
+                    <!-- Product Name -->
+                    <VBox spacing="5">
+                        <Label fx:id="lblProductName" text="Tên Sản Phẩm" 
+                               style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-font-family: 'Arial';" wrapText="true"/>
+                    </VBox>
+                    
+                    <Separator style="-fx-background-color: #ecf0f1;"/>
+                    
+                    <!-- Category -->
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="📂 Danh mục:" style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d; -fx-min-width: 120; -fx-font-weight: bold; -fx-font-family: 'Arial';"/>
+                        <Label fx:id="lblCategory" text="Danh mục"
+                               style="-fx-background-color: #ecf0f1; -fx-text-fill: #2c3e50; -fx-padding: 6 15; -fx-font-size: 14px; -fx-font-weight: bold; -fx-border-radius: 15; -fx-background-radius: 15; -fx-font-family: 'Arial';"/>
+                    </HBox>
+                    
+                    <!-- Price -->
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="💰 Giá bán:" style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d; -fx-min-width: 120; -fx-font-weight: bold; -fx-font-family: 'Arial';"/>
+                        <Label fx:id="lblPrice" text="0 đ" 
+                               style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #e74c3c; -fx-font-family: 'Arial';"/>
+                    </HBox>
+                    
+                    <!-- Stock -->
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="📦 Tình trạng:" style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d; -fx-min-width: 120; -fx-font-weight: bold; -fx-font-family: 'Arial';"/>
+                        <Label fx:id="lblStock" text="Còn hàng" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-font-family: 'Arial';"/>
+                    </HBox>
+                    
+                    <Separator style="-fx-background-color: #ecf0f1;"/>
+                    
+                    <!-- Description -->
+                    <VBox spacing="8">
+                        <Label text="📝 Mô tả sản phẩm:" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-font-family: 'Arial';"/>
+                        <TextArea fx:id="txtDescription" editable="false" wrapText="true" 
+                                  prefRowCount="5" style="-fx-background-color: #fafafa; -fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-size: 14px; -fx-font-family: 'Arial'; -fx-text-fill: #34495e;"/>
+                    </VBox>
+                    
+                    <Separator style="-fx-background-color: #ecf0f1;"/>
+                    
+                    <!-- Quantity Selector -->
+                    <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-padding: 10 0;">
+                        <Label text="Số lượng:" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-font-family: 'Arial';"/>
+                        <Spinner fx:id="spnQuantity" prefWidth="100" editable="true" 
+                                 style="-fx-font-size: 14px; -fx-font-family: 'Arial';"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="btnAddToCart" text="🛒 Thêm vào giỏ hàng" onAction="#handleAddToCart"
+                                style="-fx-background-color: #3F51B5; -fx-text-fill: white; -fx-font-size: 16px; -fx-padding: 15 40; -fx-font-weight: bold; -fx-border-radius: 8; -fx-background-radius: 8; -fx-cursor: hand; -fx-font-family: 'Arial';"/>
+                    </HBox>
+                    
+                </VBox>
+                
+            </HBox>
+        </ScrollPane>
+    </center>
+    
+</BorderPane>

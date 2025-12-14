@@ -1,0 +1,45 @@
+        package com.ucop.dao;
+
+import java.math.BigDecimal;
+
+/**
+ * Data Transfer Object for Cart Item
+ */
+public class CartItemDAO {
+    private Long itemId;
+    private int quantity;
+    private BigDecimal unitPrice;
+
+    public CartItemDAO() {
+    }
+
+    public CartItemDAO(Long itemId, int quantity, BigDecimal unitPrice) {
+        this.itemId = itemId;
+        this.quantity = quantity;
+        this.unitPrice = unitPrice;
+    }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public BigDecimal getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(BigDecimal unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+}

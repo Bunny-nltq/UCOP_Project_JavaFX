@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.ucop.controller.staff.StaffDashboardController"
+            prefWidth="1400" prefHeight="900"
+            stylesheets="@../style/main.css">
+
+    <!-- =================== TOP =================== -->
+    <top>
+        <VBox spacing="0">
+
+            <!-- ======= HEADER ======= -->
+            <HBox spacing="20" alignment="CENTER_LEFT" styleClass="header">
+
+                <Label text="UCOP — STAFF PORTAL" styleClass="header-title"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Label fx:id="lblStaff" text="Hello, staff" styleClass="header-label"/>
+
+                <Button text="Logout"
+                        onAction="#logout"
+                        styleClass="btn-danger"/>
+            </HBox>
+
+            <!-- =================== MENU =================== -->
+            <HBox alignment="CENTER_LEFT" spacing="20" styleClass="admin-menu">
+
+                <Button text="📦 Orders"
+                        onAction="#openOrders"
+                        styleClass="staff-menu-btn"/>
+
+                <Button text="🎫 Tickets"
+                        onAction="#openTickets"
+                        styleClass="staff-menu-btn"/>
+
+                <Button text="🏬 Inventory"
+                        onAction="#openWarehouse"
+                        styleClass="staff-menu-btn"/>
+
+                <Button text="💰 Payments"
+                        onAction="#openPayments"
+                        styleClass="staff-menu-btn"/>
+
+                <Button text="🚚 Shipment"
+                        onAction="#openShipment"
+                        styleClass="staff-menu-btn"/>
+
+                <Button text="↩ Refunds"
+                        onAction="#openRefunds"
+                        styleClass="staff-menu-btn"/>
+
+                <!-- ⭐⭐ NEW: CATEGORY & ITEM MANAGEMENT ⭐⭐ -->
+                <Button text="📂 Categories"
+                        onAction="#openCategoryManager"
+                        styleClass="staff-menu-btn"/>
+
+                <Button text="🛒 Items"
+                        onAction="#openItemManager"
+                        styleClass="staff-menu-btn"/>
+
+                <Button text="🎁 Khuyến Mãi"
+                        onAction="#openPromotions"
+                        styleClass="staff-menu-btn"/>
+
+            </HBox>
+
+        </VBox>
+    </top>
+
+    <!-- =================== CENTER =================== -->
+    <center>
+        <StackPane fx:id="contentArea" style="-fx-padding:20;">
+            <Label text="Staff Dashboard — Manage Operations"
+                   style="-fx-font-size:20px;" />
+        </StackPane>
+    </center>
+
+</BorderPane>

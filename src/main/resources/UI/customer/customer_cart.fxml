@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/25.0.1" 
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.ucop.controller.customer.CustomerCartController"
+      stylesheets="@/css/customer-style.css"
+      spacing="10"
+      pickOnBounds="false"
+      style="-fx-background-color: transparent;">
+    
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="15" styleClass="header-box">
+        <padding>
+            <Insets top="20" right="20" bottom="10" left="20"/>
+        </padding>
+        
+        <Label text="🛒 Giỏ Hàng Của Bạn" styleClass="header-title" 
+               style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+        
+        <Region HBox.hgrow="ALWAYS"/>
+    </HBox>
+    
+    <!-- Cart Items Container -->
+    <ScrollPane fitToWidth="true" styleClass="scroll-pane" VBox.vgrow="ALWAYS">
+        <VBox fx:id="cartItemsContainer" spacing="10" styleClass="content-box">
+            <padding>
+                <Insets top="10" right="20" bottom="10" left="20"/>
+            </padding>
+            
+            <!-- Empty Cart Message (will be shown/hidden dynamically) -->
+            <Label fx:id="lblEmptyCart" text="Giỏ hàng của bạn đang trống" 
+                   styleClass="empty-message"
+                   style="-fx-font-size: 18px; -fx-text-fill: #666; -fx-padding: 50px;"
+                   managed="false" visible="false"/>
+        </VBox>
+    </ScrollPane>
+    
+    <!-- Summary and Checkout -->
+    <VBox fx:id="cartSummary" spacing="10" styleClass="summary-box">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+            
+            <Separator/>
+            
+            <!-- Promotion Code Section -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <padding>
+                    <Insets bottom="10"/>
+                </padding>
+                
+                <Label text="🎁 Mã Khuyến Mãi:" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+                <javafx.scene.control.TextField fx:id="txtPromotionCode" 
+                       promptText="Nhập mã khuyến mãi" 
+                       prefWidth="200"
+                       style="-fx-font-size: 14px;"/>
+                <Button fx:id="btnApplyPromotion" text="Áp Dụng" 
+                        onAction="#handleApplyPromotion" 
+                        styleClass="btn-success"
+                        style="-fx-background-color: #27ae60; -fx-text-fill: white;"/>
+                <Button fx:id="btnRemovePromotion" text="✖ Xóa" 
+                        onAction="#handleRemovePromotion" 
+                        styleClass="btn-secondary"
+                        style="-fx-background-color: #95a5a6; -fx-text-fill: white;"/>
+                <Label fx:id="lblPromotionMessage" text="" 
+                       style="-fx-font-style: italic;"/>
+            </HBox>
+            
+            <Separator/>
+            
+            <!-- Summary Info -->
+            <HBox spacing="20" alignment="CENTER_RIGHT">
+                <VBox spacing="8" alignment="CENTER_RIGHT">
+                    <HBox spacing="10" alignment="CENTER_RIGHT">
+                        <Label text="Tổng số sản phẩm:" styleClass="summary-label"/>
+                        <Label fx:id="lblTotalItems" text="0 sản phẩm" styleClass="summary-value"
+                               style="-fx-font-weight: bold;"/>
+                    </HBox>
+                    
+                    <HBox spacing="10" alignment="CENTER_RIGHT">
+                        <Label text="Tạm tính:" styleClass="summary-label"
+                               style="-fx-font-size: 14px;"/>
+                        <Label fx:id="lblSubtotalAmount" text="0 ₫" styleClass="summary-value"
+                               style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                    </HBox>
+                    
+                    <HBox spacing="10" alignment="CENTER_RIGHT">
+                        <Label text="Giảm giá:" styleClass="summary-label"
+                               style="-fx-font-size: 14px;"/>
+                        <Label fx:id="lblDiscountAmount" text="0 ₫" styleClass="summary-value"
+                               style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
+                    </HBox>
+                    
+                    <Separator prefWidth="250"/>
+                    
+                    <HBox spacing="10" alignment="CENTER_RIGHT">
+                        <Label text="TỔNG THANH TOÁN:" styleClass="summary-total-label"
+                               style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                        <Label fx:id="lblTotalAmount" text="0 ₫" styleClass="summary-total"
+                               style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
+                    </HBox>
+                </VBox>
+            </HBox>
+            
+            <!-- Action Buttons -->
+            <HBox spacing="15" alignment="CENTER_RIGHT">
+                <padding>
+                    <Insets top="10"/>
+                </padding>
+                
+                <Button fx:id="btnClearCart" text="Xóa Giỏ Hàng" 
+                        onAction="#handleClearCart" styleClass="btn-danger"/>
+                
+                <Button fx:id="btnCheckout" text="Thanh Toán →" 
+                        onAction="#handleCheckout" styleClass="btn-primary"
+                        style="-fx-font-size: 16px; -fx-padding: 10px 30px;"/>
+            </HBox>
+        </VBox>
+    
+</VBox>

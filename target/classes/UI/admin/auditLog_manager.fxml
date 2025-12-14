@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.ucop.controller.admin.AuditLogController"
+            prefWidth="1200" prefHeight="600">
+
+    <!-- ============ HEADER ============ -->
+    <top>
+        <HBox style="-fx-background-color:#4a4e69; -fx-padding:16;" spacing="15">
+            <Label text="Lịch sử thao tác"
+                   style="-fx-text-fill:white; -fx-font-size:22px; -fx-font-weight:bold;" />
+        </HBox>
+    </top>
+
+    <!-- ============ MAIN TABLE ============ -->
+    <center>
+        <AnchorPane>
+            <TableView fx:id="table"
+                       AnchorPane.topAnchor="20"
+                       AnchorPane.leftAnchor="20"
+                       AnchorPane.rightAnchor="20"
+                       AnchorPane.bottomAnchor="70">
+
+                <columns>
+                    <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
+                    <TableColumn fx:id="colUserId" text="User ID" prefWidth="80"/>
+                    <TableColumn fx:id="colAction" text="Action" prefWidth="150"/>
+                    <TableColumn fx:id="colDetails" text="Details" prefWidth="250"/>
+                    <TableColumn fx:id="colEntityId" text="Entity ID" prefWidth="80"/>
+                    <TableColumn fx:id="colEntityName" text="Entity Name" prefWidth="150"/>
+                    <TableColumn fx:id="colNewValue" text="New Value" prefWidth="200"/>
+                    <TableColumn fx:id="colOldValue" text="Old Value" prefWidth="200"/>
+                    <TableColumn fx:id="colTime" text="Timestamp" prefWidth="160"/>
+                </columns>
+
+            </TableView>
+
+            <!-- DELETE BUTTON -->
+            <Button fx:id="btnDelete"
+                    text="Delete Selected"
+                    AnchorPane.leftAnchor="20"
+                    AnchorPane.bottomAnchor="20"
+                    prefWidth="150"
+                    style="-fx-background-color: #e63946; -fx-text-fill:white;"
+                    onAction="#handleDelete"/>
+
+            <!-- MESSAGE -->
+            <Label fx:id="lblMsg"
+                   AnchorPane.leftAnchor="200"
+                   AnchorPane.bottomAnchor="25"
+                   style="-fx-text-fill:red; -fx-font-size:14px;" />
+
+        </AnchorPane>
+    </center>
+
+</BorderPane>

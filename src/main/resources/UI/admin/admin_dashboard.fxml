@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.ucop.controller.admin.AdminDashboardController"
+            prefWidth="1400" prefHeight="900"
+            stylesheets="@../style/main.css">
+
+    <!-- =================== TOP =================== -->
+    <top>
+        <VBox spacing="0">
+
+            <!-- HEADER -->
+            <HBox spacing="20" alignment="CENTER_LEFT" styleClass="header">
+
+                <Label text="UCOP – ADMIN DASHBOARD" styleClass="header-title" />
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Label fx:id="lblAdmin" text="Hello, Admin!" styleClass="header-label"/>
+
+                <Button text="Đăng xuất"
+                        onAction="#logout"
+                        styleClass="btn-danger"/>
+            </HBox>
+
+            <!-- MENU -->
+            <HBox alignment="CENTER_LEFT" spacing="20"
+                  styleClass="admin-menu">
+
+                <Button text="Quản Lý Khuyến Mãi"
+                        onAction="#showPromotionManagement"
+                        styleClass="admin-menu-btn"/>
+
+                <!-- ✨ NEW: USER MANAGEMENT -->
+                <Button text="Quản Lý Người Dùng"
+                        onAction="#openUserMgmt"
+                        styleClass="admin-menu-btn"/>
+
+                <!-- ✨ NEW: AUDIT LOG -->
+                <Button text="Lịch sử thao tác"
+                        onAction="#openAudit"
+                        styleClass="admin-menu-btn"/>
+
+                <Button text="Báo Cáo Tài Chính"
+                        onAction="#showRevenueReport"
+                        styleClass="admin-menu-btn"/>
+            </HBox>
+
+        </VBox>
+    </top>
+
+    <!-- =================== CENTER =================== -->
+    <center>
+        <StackPane fx:id="contentArea" style="-fx-padding: 20;">
+            <!-- View được load từ controller -->
+        </StackPane>
+    </center>
+
+    <!-- =================== FOOTER =================== -->
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="footer">
+
+            <Label text="Trạng thái:"/>
+            <Label fx:id="lblStatus" text="Sẵn sàng" styleClass="status-ok"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <Label fx:id="lblDateTime" text="03/12/2025 21:30"/>
+            <Label text=" | "/>
+            <Label text="Phiên bản 1.0.0"/>
+
+        </HBox>
+    </bottom>
+
+</BorderPane>
