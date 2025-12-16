@@ -219,32 +219,7 @@ public class DashboardController {
 
     @FXML
     public void showPromotionManagement() {
-        loadPromotionManagementInContent();
-    }
-    
-    private void loadPromotionManagementInContent() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/UI/admin/promotion-management.fxml"));
-            Parent view = loader.load();
-            
-            // Get controller and set parent reference
-            PromotionManagementController controller = loader.getController();
-            if (controller != null) {
-                controller.setDashboardController(this);
-            }
-            
-            // Clear all previous views first
-            contentArea.getChildren().removeIf(node -> node != dashboardView);
-            
-            // Hide dashboard and show new view
-            dashboardView.setVisible(false);
-            dashboardView.setManaged(false);
-            contentArea.getChildren().add(view);
-            
-        } catch (Exception e) {
-            showError("Không thể tải quản lý khuyến mãi: " + e.getMessage());
-            e.printStackTrace();
-        }
+        showInfo("Tính năng Quản Lý Khuyến Mãi đang được phát triển.");
     }
     
     public void showPromotionForm(com.ucop.entity.Promotion promotion) {

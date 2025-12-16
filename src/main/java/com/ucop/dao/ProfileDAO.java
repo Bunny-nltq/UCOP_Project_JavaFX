@@ -1,9 +1,10 @@
 package com.ucop.dao;
 
-import com.ucop.entity.AccountProfile;
-import com.ucop.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+
+import com.ucop.entity.AccountProfile;
+import com.ucop.util.HibernateUtil;
 
 public class ProfileDAO extends GenericDAO<AccountProfile> {
 

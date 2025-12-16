@@ -2,51 +2,51 @@ package com.ucop.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "refunds")
-public class Refund {
+public class Refund extends BaseAuditable {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @ManyToOne
-    @JoinColumn(name = "payment_id")
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_id", nullable = false)
     private Payment payment;
-    
-    @Column
+
+    @Column(nullable = false)
     private BigDecimal amount;
-    
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "refund_type")
+    @Column(nullable = false)
     private RefundType refundType;
-    
+
     @Enumerated(EnumType.STRING)
-    @Column
+    @Column(nullable = false)
     private RefundStatus status = RefundStatus.PENDING;
-    
+
     @Column
     private String reason;
-    
-    @Column(name = "refund_transaction_id")
-    private String refundTransactionId;
-    
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
-    
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now();
-    
-    @Column(name = "created_by")
-    private String createdBy;
-    
-    @Column(name = "updated_by")
-    private String updatedBy;
-    
-    @Column(name = "refunded_at")
+
+    @Column
     private LocalDateTime refundedAt;
+
+    @Column(unique = true)
+    private String refundTransactionId;
 
     public Refund() {}
 
@@ -57,19 +57,21 @@ public class Refund {
         this.status = RefundStatus.PENDING;
     }
 
-    // Auto timestamps
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Refund refund = (Refund) o;
+        return Objects.equals(id, refund.id) && Objects.equals(refundTransactionId, refund.refundTransactionId);
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, refundTransactionId);
     }
 
     // Getters & Setters
+
     public Long getId() { return id; }
 
     public void setId(Long id) { this.id = id; }
@@ -94,39 +96,11 @@ public class Refund {
 
     public void setReason(String reason) { this.reason = reason; }
 
-    public String getRefundTransactionId() { return refundTransactionId; }
-
-    public void setRefundTransactionId(String refundTransactionId) { this.refundTransactionId = refundTransactionId; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-
-    public String getCreatedBy() { return createdBy; }
-
-    public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
-
-    public String getUpdatedBy() { return updatedBy; }
-
-    public void setUpdatedBy(String updatedBy) { this.updatedBy = updatedBy; }
-
     public LocalDateTime getRefundedAt() { return refundedAt; }
 
     public void setRefundedAt(LocalDateTime refundedAt) { this.refundedAt = refundedAt; }
 
-    // ENUMS
-    public enum RefundType {
-        FULL,
-        PARTIAL
-    }
+    public String getRefundTransactionId() { return refundTransactionId; }
 
-    public enum RefundStatus {
-        PENDING,
-        PROCESSING,
-        SUCCESS,
-        FAILED,
-        CANCELED
-    }
+    public void setRefundTransactionId(String refundTransactionId) { this.refundTransactionId = refundTransactionId; }
 }

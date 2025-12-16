@@ -1,5 +1,12 @@
 package com.ucop.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.ucop.dao.PromotionApplyResultDAO;
 import com.ucop.dao.PromotionDAO;
 import com.ucop.entity.Order;
@@ -7,13 +14,6 @@ import com.ucop.entity.Promotion;
 import com.ucop.entity.PromotionUsage;
 import com.ucop.repository.PromotionRepository;
 import com.ucop.repository.PromotionUsageRepository;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class PromotionService {
     private final PromotionRepository promotionRepository;
@@ -142,8 +142,8 @@ public class PromotionService {
         }
 
         // Check max usage per user
-        int userUsageCount = promotionUsageRepository.countByPromotionAndAccount(
-            promotion.getId(), accountId);
+        long userUsageCount = promotionUsageRepository.countByPromotionAndAccount(
+        promotion.getId(), accountId);
         if (promotion.getMaxUsagePerUser() != null && 
             userUsageCount >= promotion.getMaxUsagePerUser()) {
             return "Bạn đã sử dụng hết số lần áp dụng mã này!";
@@ -325,8 +325,8 @@ public class PromotionService {
         }
 
         if (accountId != null && promotion.getMaxUsagePerUser() != null) {
-            int userUsageCount = promotionUsageRepository.countByPromotionAndAccount(
-                promotion.getId(), accountId);
+        long userUsageCount = promotionUsageRepository.countByPromotionAndAccount(
+            promotion.getId(), accountId);
             if (userUsageCount >= promotion.getMaxUsagePerUser()) {
                 return PromotionApplyResultDAO.failure("Bạn đã sử dụng hết số lần áp dụng mã này!");
             }

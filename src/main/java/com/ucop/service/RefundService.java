@@ -9,6 +9,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import com.ucop.entity.Order;
 import com.ucop.entity.Payment;
 import com.ucop.entity.Refund;
+import com.ucop.entity.RefundStatus;
+import com.ucop.entity.RefundType;
 import com.ucop.repository.OrderRepository;
 import com.ucop.repository.PaymentRepository;
 import com.ucop.repository.RefundRepository;
@@ -32,7 +34,7 @@ public class RefundService {
      */
     public Refund createRefund(Long paymentId,
                                BigDecimal amount,
-                               Refund.RefundType refundType,
+                               RefundType refundType,
                                String reason) {
 
         Payment payment = paymentRepository.findById(paymentId)
@@ -40,7 +42,7 @@ public class RefundService {
 
         BigDecimal paymentAmount = payment.getAmount();
 
-        if (refundType == Refund.RefundType.FULL) {
+        if (refundType == RefundType.FULL) {
             amount = paymentAmount;
         } else {
             // Partial refund validation
@@ -53,7 +55,7 @@ public class RefundService {
 
         Refund refund = new Refund(payment, amount, refundType);
         refund.setReason(reason);
-        refund.setStatus(Refund.RefundStatus.PENDING);
+        refund.setStatus(RefundStatus.PENDING);
 
         // createdAt, updatedAt sẽ tự set bằng @PrePersist
 
@@ -69,19 +71,19 @@ public class RefundService {
                 .orElseThrow(() -> new IllegalArgumentException("Refund not found"));
 
         if (success) {
-            refund.setStatus(Refund.RefundStatus.SUCCESS);
+            refund.setStatus(RefundStatus.SUCCESS);
             refund.setRefundedAt(LocalDateTime.now());
             refund.setRefundTransactionId(generateRefundTransactionId());
 
             // If full refund -> mark order as refunded
-            if (refund.getRefundType() == Refund.RefundType.FULL) {
+            if (refund.getRefundType() == RefundType.FULL) {
                 Order order = refund.getPayment().getOrder();
                 order.setStatus(Order.OrderStatus.REFUNDED);
                 orderRepository.update(order);
             }
 
         } else {
-            refund.setStatus(Refund.RefundStatus.FAILED);
+            refund.setStatus(RefundStatus.FAILED);
         }
 
         refund.setUpdatedAt(LocalDateTime.now());
@@ -97,7 +99,7 @@ public class RefundService {
         return refundRepository.findByPaymentId(paymentId);
     }
 
-    public List<Refund> getRefundsByStatus(Refund.RefundStatus status) {
+    public List<Refund> getRefundsByStatus(RefundStatus status) {
         return refundRepository.findByStatus(status.name());
     }
 
@@ -109,7 +111,7 @@ public class RefundService {
         List<Refund> refunds = refundRepository.findByPaymentId(paymentId);
 
         return refunds.stream()
-                .filter(r -> r.getStatus() == Refund.RefundStatus.SUCCESS)
+                .filter(r -> r.getStatus() == RefundStatus.SUCCESS)
                 .map(Refund::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }

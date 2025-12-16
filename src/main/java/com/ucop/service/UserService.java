@@ -1,14 +1,15 @@
 package com.ucop.service;
 
+import java.util.List;
+
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+
 import com.ucop.dao.UserDAO;
 import com.ucop.entity.AccountProfile;
 import com.ucop.entity.Role;
 import com.ucop.entity.User;
 import com.ucop.util.HibernateUtil;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-
-import java.util.List;
 
 public class UserService {
 

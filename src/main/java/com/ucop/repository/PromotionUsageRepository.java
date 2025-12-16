@@ -1,15 +1,16 @@
 package com.ucop.repository;
 
-import com.ucop.entity.PromotionUsage;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
-
 import java.util.List;
 import java.util.Optional;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+
+import com.ucop.entity.PromotionUsage;
+
 public class PromotionUsageRepository {
+
     private final SessionFactory sessionFactory;
 
     public PromotionUsageRepository(SessionFactory sessionFactory) {
@@ -27,7 +28,7 @@ public class PromotionUsageRepository {
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw new RuntimeException("Error saving promotion usage: " + e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -35,62 +36,54 @@ public class PromotionUsageRepository {
         try (Session session = sessionFactory.openSession()) {
             PromotionUsage usage = session.get(PromotionUsage.class, id);
             return Optional.ofNullable(usage);
-        } catch (Exception e) {
-            throw new RuntimeException("Error finding promotion usage by id: " + e.getMessage(), e);
         }
     }
 
     public List<PromotionUsage> findByPromotionId(Long promotionId) {
         try (Session session = sessionFactory.openSession()) {
-            Query<PromotionUsage> query = session.createQuery(
-                "FROM PromotionUsage pu WHERE pu.promotion.id = :promotionId ORDER BY pu.usedAt DESC",
-                PromotionUsage.class
-            );
-            query.setParameter("promotionId", promotionId);
-            return query.list();
-        } catch (Exception e) {
-            throw new RuntimeException("Error finding usages by promotion: " + e.getMessage(), e);
+            return session.createQuery("FROM PromotionUsage WHERE promotion.id = :promotionId", PromotionUsage.class)
+                    .setParameter("promotionId", promotionId)
+                    .getResultList();
         }
     }
 
-    public List<PromotionUsage> findByAccountId(Long accountId) {
+    public long countByPromotionAndAccount(Long promotionId, Long accountId) {
         try (Session session = sessionFactory.openSession()) {
-            Query<PromotionUsage> query = session.createQuery(
-                "FROM PromotionUsage pu WHERE pu.accountId = :accountId ORDER BY pu.usedAt DESC",
-                PromotionUsage.class
-            );
-            query.setParameter("accountId", accountId);
-            return query.list();
-        } catch (Exception e) {
-            throw new RuntimeException("Error finding usages by account: " + e.getMessage(), e);
+            return (Long) session.createQuery("SELECT COUNT(u) FROM PromotionUsage u WHERE u.promotion.id = :promotionId AND u.accountId = :accountId")
+                    .setParameter("promotionId", promotionId)
+                    .setParameter("accountId", accountId)
+                    .uniqueResult();
         }
     }
 
-    public int countByPromotionAndAccount(Long promotionId, Long accountId) {
+    public void update(PromotionUsage usage) {
+        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            Query<Long> query = session.createQuery(
-                "SELECT COUNT(pu) FROM PromotionUsage pu " +
-                "WHERE pu.promotion.id = :promotionId AND pu.accountId = :accountId",
-                Long.class
-            );
-            query.setParameter("promotionId", promotionId);
-            query.setParameter("accountId", accountId);
-            return query.uniqueResult().intValue();
+            transaction = session.beginTransaction();
+            session.update(usage);
+            transaction.commit();
         } catch (Exception e) {
-            throw new RuntimeException("Error counting usages: " + e.getMessage(), e);
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
         }
     }
 
-    public List<PromotionUsage> findByOrderId(Long orderId) {
+    public void delete(Long id) {
+        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            Query<PromotionUsage> query = session.createQuery(
-                "FROM PromotionUsage pu WHERE pu.order.id = :orderId",
-                PromotionUsage.class
-            );
-            query.setParameter("orderId", orderId);
-            return query.list();
+            transaction = session.beginTransaction();
+            PromotionUsage usage = session.get(PromotionUsage.class, id);
+            if (usage != null) {
+                session.delete(usage);
+            }
+            transaction.commit();
         } catch (Exception e) {
-            throw new RuntimeException("Error finding usages by order: " + e.getMessage(), e);
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw e;
         }
     }
 }

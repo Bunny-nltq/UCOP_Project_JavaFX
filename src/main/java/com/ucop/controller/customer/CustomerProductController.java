@@ -346,24 +346,25 @@ public class CustomerProductController {
      * View product details
      */
     private void viewProductDetails(Item product) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/UI/customer/product-detail.fxml"));
-            Parent root = loader.load();
-            
-            ProductDetailController controller = loader.getController();
-            controller.setProduct(product);
-            controller.setServices(productService, orderService);
-            controller.setCurrentAccountId(currentAccountId);
-            controller.setParentController(this);
-            
-            // Lấy BorderPane cha từ CustomerMainController
-            BorderPane mainContainer = (BorderPane) gridProducts.getScene().getRoot();
-            if (mainContainer != null) {
-                mainContainer.setCenter(root);
-            }
-        } catch (IOException e) {
-            showError("Không thể mở chi tiết sản phẩm: " + e.getMessage());
-        }
+        // try {
+        //     FXMLLoader loader = new FXMLLoader(getClass().getResource("/UI/customer/product-detail.fxml"));
+        //     Parent root = loader.load();
+        //
+        //     ProductDetailController controller = loader.getController();
+        //     controller.setProduct(product);
+        //     controller.setServices(productService, orderService);
+        //     controller.setCurrentAccountId(currentAccountId);
+        //     controller.setParentController(this);
+        //
+        //     // Lấy BorderPane cha từ CustomerMainController
+        //     BorderPane mainContainer = (BorderPane) gridProducts.getScene().getRoot();
+        //     if (mainContainer != null) {
+        //         mainContainer.setCenter(root);
+        //     }
+        // } catch (IOException e) {
+        //     showError("Không thể mở chi tiết sản phẩm: " + e.getMessage());
+        // }
+        showInfo("Tính năng xem chi tiết sản phẩm đang được phát triển.");
     }
 
     @FXML
