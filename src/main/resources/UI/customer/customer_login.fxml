@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.geometry.Pos?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.ucop.controller.customer.LoginController"
+      alignment="CENTER"
+      spacing="20"
+      stylesheets="@../style/main.css"
+      style="-fx-padding: 40;">
+
+    <!-- HEADER -->
+    <Label text="UCOP – CUSTOMER LOGIN" 
+           styleClass="login-title" />
+
+    <!-- USERNAME -->
+    <TextField fx:id="txtUser"
+               promptText="Username or Email"
+               styleClass="input-field"/>
+
+    <!-- PASSWORD -->
+    <PasswordField fx:id="txtPass"
+                   promptText="Password"
+                   styleClass="input-field"/>
+
+    <!-- ERROR MESSAGE -->
+    <Label fx:id="lblMsg"
+           textFill="red"
+           style="-fx-font-size: 13px;"/>
+
+    <!-- BUTTONS -->
+    <HBox spacing="20" alignment="CENTER">
+        <Button text="Login"
+                onAction="#handleLogin"
+                styleClass="btn-primary"/>
+
+        <Button text="Register"
+                onAction="#goRegister"
+                styleClass="btn-danger"/>
+    </HBox>
+
+</VBox>
