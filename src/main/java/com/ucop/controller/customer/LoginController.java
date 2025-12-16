@@ -38,7 +38,7 @@ public class LoginController {
             return;
         }
 
-        String hashed = HashUtil.md5(pass);
+        String hashed = HashUtil.sha256(pass);
 
         if (!hashed.equals(user.getPassword())) {
             lblMsg.setText("Wrong password!");
@@ -77,7 +77,7 @@ public class LoginController {
                     loader = new FXMLLoader(getClass().getResource("/UI/customer/customer_dashboard.fxml"));
                     root = loader.load();
                     CustomerDashboardController cusCtrl = loader.getController();
-                    cusCtrl.setCurrentUser(user);
+                    cusCtrl.setCustomer(user);
                     break;
             }
 
