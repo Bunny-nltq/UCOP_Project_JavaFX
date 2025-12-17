@@ -63,6 +63,7 @@ public class CustomerProductControllerV2 {
     private Long currentAccountId = 1L; // TODO: Get from session
     private Cart currentCart;
     private BorderPane mainContainer; // Main container from CustomerMainController
+    private CustomerMainController customerMainController; // Reference to main controller
 
     /**
      * Set main container from parent controller
@@ -70,6 +71,14 @@ public class CustomerProductControllerV2 {
     public void setMainContainer(BorderPane mainContainer) {
         this.mainContainer = mainContainer;
         System.out.println("✓ CustomerProductControllerV2: mainContainer set = " + (mainContainer != null));
+    }
+
+    /**
+     * Set customer main controller for navigation
+     */
+    public void setCustomerMainController(CustomerMainController controller) {
+        this.customerMainController = controller;
+        System.out.println("✓ CustomerProductControllerV2: customerMainController set = " + (controller != null));
     }
 
     @FXML
@@ -331,6 +340,10 @@ public class CustomerProductControllerV2 {
             // Get controller and set account ID
             CustomerCartController controller = loader.getController();
             controller.setCurrentAccountId(currentAccountId);
+            // Set main controller for navigation to orders page
+            if (customerMainController != null) {
+                controller.setMainController(customerMainController);
+            }
             // Force reload cart after setting account ID
             controller.refreshCart();
             

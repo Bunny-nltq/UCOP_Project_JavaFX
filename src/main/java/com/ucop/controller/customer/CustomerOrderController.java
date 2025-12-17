@@ -121,25 +121,35 @@ public class CustomerOrderController {
         );
     }
 
+    @FXML
     private void loadOrders() {
+        System.out.println("=== Loading Orders ===");
+        System.out.println("OrderService: " + (orderService != null ? "OK" : "NULL"));
+        System.out.println("Account ID: " + currentAccountId);
+        
         if (orderService == null || currentAccountId == null) {
+            System.out.println("⚠️ Cannot load orders: orderService or accountId is null");
             return;
         }
         
         try {
             // Load orders for current account
             List<Order> orderList = orderService.getOrdersByAccountId(currentAccountId);
+            System.out.println("✓ Loaded " + orderList.size() + " orders from database");
+            
             orders.setAll(orderList);
             orderTable.setItems(orders);
             applyFilters();
         } catch (Exception e) {
+            System.err.println("✗ Error loading orders: " + e.getMessage());
+            e.printStackTrace();
             showError("Lỗi! Không thể tải danh sách đơn hàng: " + e.getMessage());
         }
     }
 
     private void applyFilters() {
-        String searchText = searchField.getText().toLowerCase();
-        String status = statusFilter.getValue();
+        String searchText = (searchField != null && searchField.getText() != null) ? searchField.getText().toLowerCase() : "";
+        String status = (statusFilter != null && statusFilter.getValue() != null) ? statusFilter.getValue() : "Tất cả";
         
         ObservableList<Order> filtered = orders.filtered(order -> {
             boolean matches = true;
@@ -150,7 +160,7 @@ public class CustomerOrderController {
             }
             
             // Status filter
-            if (!status.equals("Ất cả")) {
+            if (!status.equals("Tất cả")) {
                 Order.OrderStatus translatedStatus = translateStatusReverse(status);
                 matches = matches && order.getStatus().equals(translatedStatus);
             }
@@ -159,7 +169,9 @@ public class CustomerOrderController {
         });
         
         orderTable.setItems(filtered);
-        totalOrdersLabel.setText("Tổng: " + filtered.size() + " đơn hàng");
+        if (totalOrdersLabel != null) {
+            totalOrdersLabel.setText("Tổng: " + filtered.size() + " đơn hàng");
+        }
     }
 
     private void displayOrderDetails(Order order) {

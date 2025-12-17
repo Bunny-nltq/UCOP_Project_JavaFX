@@ -67,6 +67,7 @@ public class CustomerCartController {
     private Long currentAccountId;
     private Cart currentCart;
     private CustomerProductController parentController;
+    private CustomerMainController mainController;
     private Promotion appliedPromotion;
     private BigDecimal discountAmount = BigDecimal.ZERO;
 
@@ -123,6 +124,13 @@ public class CustomerCartController {
      */
     public void setParentController(CustomerProductController parentController) {
         this.parentController = parentController;
+    }
+
+    /**
+     * Set main controller for navigation to orders page
+     */
+    public void setMainController(CustomerMainController mainController) {
+        this.mainController = mainController;
     }
 
     /**
@@ -431,15 +439,24 @@ public class CustomerCartController {
             confirm.showAndWait().ifPresent(response -> {
                 if (response == javafx.scene.control.ButtonType.OK) {
                     try {
+                        System.out.println("=== Creating Order ===");
+                        System.out.println("Cart ID: " + currentCart.getId());
+                        System.out.println("Account ID: " + currentAccountId);
+                        
                         // Create order with PENDING_PAYMENT status
                         Order order = orderService.placeOrder(currentCart.getId(), Order.OrderStatus.PENDING_PAYMENT);
+                        
+                        System.out.println("✓ Order created successfully!");
+                        System.out.println("Order ID: " + order.getId());
+                        System.out.println("Order Number: " + order.getOrderNumber());
+                        System.out.println("Account ID: " + order.getAccountId());
 
                         String successMsg = "Đặt hàng thành công!\n\nMã đơn hàng: " + order.getOrderNumber() + 
                                           "\nTổng tiền: " + formatPrice(totalForDisplay);
                         if (promotionForLambda != null) {
                             successMsg += "\nGiảm giá: " + formatPrice(discountForLambda);
                         }
-                        successMsg += "\n\nCảm ơn bạn đã mua hàng!";
+                        successMsg += "\n\nĐơn hàng của bạn đã được tạo!";
                         
                         showInfo(successMsg);
                         
@@ -453,9 +470,20 @@ public class CustomerCartController {
                         // Reload cart to reflect empty cart after order
                         loadCart();
                         
-                        // Navigate back to products
-                        handleContinueShopping();
+                        System.out.println("=== Navigating to Orders Page ===");
+                        System.out.println("MainController: " + (mainController != null ? "OK" : "NULL"));
+                        
+                        // Navigate to orders page to show the new order
+                        if (mainController != null) {
+                            mainController.handleMyOrders();
+                        } else {
+                            System.out.println("⚠️ MainController is null, cannot navigate to orders page");
+                            // Fallback to continue shopping if mainController not set
+                            handleContinueShopping();
+                        }
                     } catch (Exception e) {
+                        System.err.println("✗ Error creating order: " + e.getMessage());
+                        e.printStackTrace();
                         showError("Lỗi tạo đơn hàng: " + e.getMessage());
                     }
                 }

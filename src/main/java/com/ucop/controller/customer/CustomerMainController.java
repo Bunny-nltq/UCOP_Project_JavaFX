@@ -49,8 +49,11 @@ public class CustomerMainController {
      * Initialize all services with repositories
      */
     private void initializeServices() {
+        System.out.println("=== Initializing Services ===");
+        
         // Get SessionFactory
         SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+        System.out.println("✓ SessionFactory: " + (sessionFactory != null ? "OK" : "NULL"));
         
         // Initialize repositories
         ProductRepository productRepository = new ProductRepositoryImpl(sessionFactory);
@@ -61,11 +64,18 @@ public class CustomerMainController {
         PromotionRepository promotionRepository = new PromotionRepository(sessionFactory);
         PromotionUsageRepository promotionUsageRepository = new PromotionUsageRepository(sessionFactory);
         
+        System.out.println("✓ All repositories initialized");
+        
         // Initialize services
         productService = new ProductService(productRepository);
         orderService = new OrderService(orderRepository, cartRepository, stockItemRepository, 
                                         shipmentRepository);
         promotionService = new PromotionService(promotionRepository, promotionUsageRepository);
+        
+        System.out.println("✓ ProductService: " + (productService != null ? "OK" : "NULL"));
+        System.out.println("✓ OrderService: " + (orderService != null ? "OK" : "NULL"));
+        System.out.println("✓ PromotionService: " + (promotionService != null ? "OK" : "NULL"));
+        System.out.println("✓ Current Account ID: " + currentAccountId);
     }
 
     /**
@@ -88,11 +98,12 @@ public class CustomerMainController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/UI/customer/customer-products.fxml"));
             Parent page = loader.load();
             
-            // Get controller and pass mainContainer
+            // Get controller and pass mainContainer and this controller
             CustomerProductControllerV2 controller = loader.getController();
             if (controller != null) {
                 controller.setMainContainer(mainContainer);
-                System.out.println("✓ Set mainContainer for CustomerProductControllerV2");
+                controller.setCustomerMainController(this); // Pass this controller for navigation
+                System.out.println("✓ Set mainContainer and customerMainController for CustomerProductControllerV2");
             } else {
                 System.err.println("✗ WARNING: CustomerProductControllerV2 is null!");
             }
@@ -108,18 +119,31 @@ public class CustomerMainController {
      * Load My Orders page
      */
     @FXML
-    private void handleMyOrders() {
+    public void handleMyOrders() {
+        System.out.println("=== Loading Orders Page ===");
+        System.out.println("OrderService: " + (orderService != null ? "OK" : "NULL"));
+        System.out.println("Current Account ID: " + currentAccountId);
+        
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/UI/customer/customer-orders.fxml"));
             Parent page = loader.load();
             
+            System.out.println("✓ FXML loaded successfully");
+            
             // Inject services into controller
             CustomerOrderController controller = loader.getController();
+            System.out.println("✓ Controller obtained: " + (controller != null ? "OK" : "NULL"));
+            
             controller.setOrderService(orderService);
+            System.out.println("✓ OrderService set to controller");
+            
             controller.setAccountId(currentAccountId);
+            System.out.println("✓ Account ID set to controller: " + currentAccountId);
             
             mainContainer.setCenter(page);
+            System.out.println("✓ Orders page loaded to mainContainer");
         } catch (IOException e) {
+            System.err.println("✗ Error loading orders page:");
             e.printStackTrace();
             showError("Không thể tải trang đơn hàng: " + e.getMessage());
         }
