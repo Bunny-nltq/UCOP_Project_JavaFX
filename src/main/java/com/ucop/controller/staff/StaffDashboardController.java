@@ -1,6 +1,18 @@
 package com.ucop.controller.staff;
 
 import com.ucop.entity.User;
+
+import com.ucop.repository.CartRepository;
+import com.ucop.repository.OrderRepository;
+import com.ucop.repository.ShipmentRepository;
+import com.ucop.repository.StockItemRepository;
+import com.ucop.repository.impl.CartRepositoryImpl;
+import com.ucop.repository.impl.OrderRepositoryImpl;
+import com.ucop.repository.impl.ShipmentRepositoryImpl;
+import com.ucop.repository.impl.StockItemRepositoryImpl;
+
+import com.ucop.service.OrderService;
+
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -9,6 +21,9 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
 public class StaffDashboardController {
 
     @FXML private StackPane contentArea;
@@ -16,10 +31,36 @@ public class StaffDashboardController {
 
     private User staff;
 
+    // ===== Services (create once) =====
+    private static SessionFactory SF;
+
+    private static SessionFactory getSessionFactory() {
+        if (SF == null) {
+            SF = new Configuration().configure().buildSessionFactory();
+        }
+        return SF;
+    }
+
+    private OrderService orderService;
+
+    private OrderService getOrderService() {
+        if (orderService == null) {
+            SessionFactory sf = getSessionFactory();
+
+            CartRepository cartRepository = new CartRepositoryImpl(sf);
+            OrderRepository orderRepository = new OrderRepositoryImpl(sf);
+            StockItemRepository stockItemRepository = new StockItemRepositoryImpl(sf);
+            ShipmentRepository shipmentRepository = new ShipmentRepositoryImpl(sf);
+
+            orderService = new OrderService(orderRepository, cartRepository, stockItemRepository, shipmentRepository);
+        }
+        return orderService;
+    }
+
     /** Nhận user từ LoginController */
     public void setStaff(User user) {
         this.staff = user;
-        if (lblStaff != null) {
+        if (lblStaff != null && user != null) {
             lblStaff.setText("Hello, " + user.getUsername());
         }
     }
@@ -31,6 +72,11 @@ public class StaffDashboardController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(path));
             Parent ui = loader.load();
+
+            // ✅ Inject services for specific controllers
+            Object ctrl = loader.getController();
+            injectToChildController(ctrl);
+
             contentArea.getChildren().setAll(ui);
 
         } catch (Exception e) {
@@ -39,36 +85,34 @@ public class StaffDashboardController {
         }
     }
 
+    private void injectToChildController(Object ctrl) {
+        if (ctrl == null) return;
+
+        // ✅ Orders page: inject OrderService để load DB lên bảng
+        if (ctrl instanceof StaffOrderController c) {
+            c.setOrderService(getOrderService());
+            // setOrderService() sẽ tự gọi loadOrders() sau initialize
+        }
+    }
+
     // ================= MENU ==================
+    @FXML public void openOrders() { loadView("staff_orders.fxml"); }
 
-    @FXML public void openOrders()     { loadView("staff_orders.fxml"); }
-    @FXML public void openTickets()    { loadView("staff_tickets.fxml"); }
-    @FXML public void openWarehouse()  { loadView("staff_warehouse.fxml"); }
-    @FXML public void openPayments()   { loadView("staff_payments.fxml"); }
-    @FXML public void openShipment()   { loadView("staff_shipment.fxml"); }
-    @FXML public void openRefunds()    { loadView("staff_refund.fxml"); }
-
-    // ============ NEW: CATEGORY & ITEM MANAGEMENT ============
-
-    /** Mở giao diện quản lý danh mục */
     @FXML
     public void openCategoryManager() {
         loadAdminModule("category_manager.fxml");
     }
 
-    /** Mở giao diện quản lý sản phẩm */
     @FXML
     public void openItemManager() {
         loadAdminModule("items_manager.fxml");
     }
 
-    /** Mở giao diện xem khuyến mãi (read-only) */
     @FXML
     public void openPromotions() {
         loadAdminModule("staff_promotions.fxml");
     }
 
-    /** Load các FXML của admin (vì category & items nằm trong thư mục admin) */
     private void loadAdminModule(String fileName) {
         String path = "/UI/staff/" + fileName;
 

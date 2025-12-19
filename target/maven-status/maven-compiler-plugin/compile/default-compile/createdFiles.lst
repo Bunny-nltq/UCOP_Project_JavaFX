@@ -40,6 +40,7 @@ com\ucop\util\CheckProductImages.class
 com\ucop\service\ReportService.class
 com\ucop\service\PaymentService$1.class
 com\ucop\controller\staff\CategoryController.class
+com\ucop\controller\staff\StaffOrderController$4.class
 com\ucop\entity\Shipment.class
 com\ucop\controller\staff\package-info.class
 com\ucop\controller\admin\PromotionController$1.class

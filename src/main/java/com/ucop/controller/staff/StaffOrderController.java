@@ -1,405 +1,311 @@
 package com.ucop.controller.staff;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-
-import com.ucop.entity.Item;
 import com.ucop.entity.Order;
 import com.ucop.service.OrderService;
-import com.ucop.service.ProductService;
-
+import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
-/**
- * Controller for Staff Order Management
- */
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
 public class StaffOrderController {
 
-    @FXML
-    private TableView<Order> orderTable;
+    // ====== FORM (top) ======
+    @FXML private TextField txtOrderNumber;
+    @FXML private TextField txtAccountId;
+    @FXML private ComboBox<String> cbStatus;
+    @FXML private TextField txtSubtotal;
+    @FXML private TextField txtGrandTotal;
+    @FXML private TextField txtPlacedAt;
 
-    @FXML
-    private TableColumn<Order, String> orderNumberColumn;
+    @FXML private TextField txtDiscountCode;   // form
 
-    @FXML
-    private TableColumn<Order, LocalDateTime> orderDateColumn;
+    @FXML private TextArea txtNote;
 
-    @FXML
-    private TableColumn<Order, String> customerColumn;
+    // ====== TABLE (center) ======
+    @FXML private TableView<Order> tblOrders;
 
-    @FXML
-    private TableColumn<Order, Order.OrderStatus> statusColumn;
+    @FXML private TableColumn<Order, Long> colId;
+    @FXML private TableColumn<Order, String> colOrderNumber;
+    @FXML private TableColumn<Order, Long> colAccountId;
+    @FXML private TableColumn<Order, Order.OrderStatus> colStatus;
+    @FXML private TableColumn<Order, BigDecimal> colSubtotal;
+    @FXML private TableColumn<Order, BigDecimal> colGrandTotal;
 
-    @FXML
-    private TableColumn<Order, BigDecimal> totalColumn;
+    // ✅ NEW column in table
+    @FXML private TableColumn<Order, String> colDiscountCode;
 
-    @FXML
-    private ComboBox<String> statusFilter;
+    @FXML private TableColumn<Order, Object> colPlacedAt;
 
-    @FXML
-    private TextField searchField;
-
-    @FXML
-    private TextArea orderDetailsArea;
-
-    @FXML
-    private Label totalOrdersLabel;
-
-    @FXML
-    private Button btnUpdateStatus;
-
-    @FXML
-    private Button btnCancelOrder;
-
-    @FXML
-    private ComboBox<String> statusUpdateCombo;
+    private final ObservableList<Order> orders = FXCollections.observableArrayList();
 
     private OrderService orderService;
-    private ProductService productService;
-    private ObservableList<Order> orders;
+    private boolean uiReady = false;
 
     @FXML
     public void initialize() {
-        orders = FXCollections.observableArrayList();
+        cbStatus.setItems(FXCollections.observableArrayList(
+                "Chờ xử lý", "Đã xác nhận", "Đang xử lý", "Đang giao", "Đã giao", "Đã hủy"
+        ));
+        cbStatus.getSelectionModel().selectFirst();
 
-        setupTableColumns();
-        setupFilters();
-        setupStatusUpdateOptions();
-        setupEventHandlers();
+        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        colOrderNumber.setCellValueFactory(new PropertyValueFactory<>("orderNumber"));
+        colAccountId.setCellValueFactory(new PropertyValueFactory<>("accountId"));
+        colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        colSubtotal.setCellValueFactory(new PropertyValueFactory<>("subtotal"));
+        colGrandTotal.setCellValueFactory(new PropertyValueFactory<>("grandTotal"));
+
+        // ✅ Discount code column: lấy từ entity bằng reflection
+        if (colDiscountCode != null) {
+            colDiscountCode.setCellValueFactory(cell ->
+                    new ReadOnlyStringWrapper(safe(extractDiscountCode(cell.getValue())))
+            );
+        }
+
+        colStatus.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(Order.OrderStatus st, boolean empty) {
+                super.updateItem(st, empty);
+                setText(empty || st == null ? null : translateStatus(st));
+            }
+        });
+
+        colSubtotal.setCellFactory(col -> moneyCell());
+        colGrandTotal.setCellFactory(col -> moneyCell());
+
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        colPlacedAt.setCellValueFactory(new PropertyValueFactory<>("placedAt"));
+
+        colPlacedAt.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(Object t, boolean empty) {
+                super.updateItem(t, empty);
+                if (empty || t == null) {
+                    setText(null);
+                    return;
+                }
+
+                // support LocalDateTime / java.util.Date / java.sql.Timestamp
+                try {
+                    if (t instanceof java.time.LocalDateTime ldt) {
+                        setText(ldt.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                        return;
+                    }
+                    if (t instanceof java.sql.Timestamp ts) {
+                        setText(ts.toLocalDateTime().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                        return;
+                    }
+                    if (t instanceof java.util.Date d) {
+                        java.time.LocalDateTime ldt = java.time.LocalDateTime.ofInstant(
+                                d.toInstant(), java.time.ZoneId.systemDefault()
+                        );
+                        setText(ldt.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                        return;
+                    }
+
+                    setText(t.toString());
+                } catch (Exception ex) {
+                    setText(t.toString());
+                }
+            }
+        });
+
+
+        tblOrders.setItems(orders);
+
+        // Click row -> fill form
+        tblOrders.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
+            if (newV != null) fillForm(newV);
+        });
+
+        uiReady = true;
+
+        if (orderService != null) {
+            Platform.runLater(this::loadOrders);
+        }
     }
 
+    // Inject service từ StaffDashboard. Inject xong -> tự load DB
     public void setOrderService(OrderService orderService) {
         this.orderService = orderService;
-        loadOrders();
+        if (uiReady) {
+            Platform.runLater(this::loadOrders);
+        }
     }
 
-    public void setProductService(ProductService productService) {
-        this.productService = productService;
-    }
-
-    private void setupTableColumns() {
-        orderNumberColumn.setCellValueFactory(new PropertyValueFactory<>("orderNumber"));
-        orderDateColumn.setCellValueFactory(new PropertyValueFactory<>("placedAt"));
-        customerColumn.setCellValueFactory(new PropertyValueFactory<>("shippingName"));
-        statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-        totalColumn.setCellValueFactory(new PropertyValueFactory<>("grandTotal"));
-
-        // Format status column
-        statusColumn.setCellFactory(column -> new TableCell<Order, Order.OrderStatus>() {
+    private TableCell<Order, BigDecimal> moneyCell() {
+        return new TableCell<>() {
             @Override
-            protected void updateItem(Order.OrderStatus status, boolean empty) {
-                super.updateItem(status, empty);
-                if (empty || status == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    setText(translateStatus(status));
-                    setStyle(getStatusStyle(status));
-                }
+            protected void updateItem(BigDecimal v, boolean empty) {
+                super.updateItem(v, empty);
+                if (empty) { setText(null); return; }
+                BigDecimal val = (v == null) ? BigDecimal.ZERO : v;
+                setText(String.format("%,.0f đ", val).replace(',', '.'));
             }
-        });
-
-        // Format total column
-        totalColumn.setCellFactory(column -> new TableCell<Order, BigDecimal>() {
-            @Override
-            protected void updateItem(BigDecimal total, boolean empty) {
-                super.updateItem(total, empty);
-                if (empty || total == null) {
-                    setText(null);
-                } else {
-                    setText(String.format("%,.0f VNĐ", total));
-                }
-            }
-        });
+        };
     }
 
-    private void setupFilters() {
-        statusFilter.setItems(FXCollections.observableArrayList(
-            "Tất cả", "Chờ xử lý", "Đã xác nhận", "Đang xử lý", "Đang giao", "Đã giao", "Đã hủy"
-        ));
-        statusFilter.setValue("Tất cả");
-        statusFilter.setOnAction(e -> applyFilters());
-
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
-    }
-
-    private void setupStatusUpdateOptions() {
-        statusUpdateCombo.setItems(FXCollections.observableArrayList(
-            "Đã xác nhận", "Đang xử lý", "Đang giao", "Đã giao", "Đã hủy"
-        ));
-    }
-
-    private void setupEventHandlers() {
-        orderTable.getSelectionModel().selectedItemProperty().addListener(
-            (obs, oldSelection, newSelection) -> {
-                if (newSelection != null) {
-                    displayOrderDetails(newSelection);
-                    updateStatusUpdateButton(newSelection);
-                }
-            }
-        );
-    }
-
+    // ====== Buttons ======
+    @FXML
     private void loadOrders() {
         if (orderService == null) {
+            showError("Thiếu OrderService (chưa inject).");
             return;
         }
-
         try {
-            List<Order> orderList = orderService.getAllOrders();
-            orders.setAll(orderList);
-            orderTable.setItems(orders);
-            applyFilters();
-        } catch (Exception e) {
-            showError("Lỗi tải danh sách đơn hàng: " + e.getMessage());
+            List<Order> list = orderService.getAllOrders();
+            orders.setAll(list);
+
+            if (!orders.isEmpty()) {
+                tblOrders.getSelectionModel().selectFirst(); // auto fill form
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            showError("Lỗi tải đơn hàng: " + ex.getMessage());
         }
-    }
-
-    private void applyFilters() {
-        String searchText = searchField.getText().toLowerCase();
-        String status = statusFilter.getValue();
-
-        ObservableList<Order> filtered = orders.filtered(order -> {
-            boolean matches = true;
-
-            // Search filter
-            if (!searchText.isEmpty()) {
-                matches = order.getOrderNumber().toLowerCase().contains(searchText) ||
-                         (order.getShippingName() != null &&
-                          order.getShippingName().toLowerCase().contains(searchText));
-            }
-
-            // Status filter
-            if (!status.equals("Tất cả")) {
-                Order.OrderStatus translatedStatus = translateStatusReverse(status);
-                matches = matches && order.getStatus().equals(translatedStatus);
-            }
-
-            return matches;
-        });
-
-        orderTable.setItems(filtered);
-        totalOrdersLabel.setText("Tổng: " + filtered.size() + " đơn hàng");
-    }
-
-    private void displayOrderDetails(Order order) {
-        StringBuilder details = new StringBuilder();
-        details.append("Mã đơn: ").append(order.getOrderNumber()).append("\n\n");
-        details.append("Ngày đặt: ").append(order.getPlacedAt()).append("\n");
-        details.append("Trạng thái: ").append(translateStatus(order.getStatus())).append("\n\n");
-        details.append("Thông tin khách hàng:\n");
-        details.append("Tên: ").append(order.getShippingName()).append("\n");
-        details.append("Điện thoại: ").append(order.getShippingPhone()).append("\n");
-        details.append("Địa chỉ: ").append(order.getShippingAddress()).append("\n\n");
-
-        if (order.getItems() != null && !order.getItems().isEmpty()) {
-            details.append("Chi tiết sản phẩm:\n");
-            for (var orderItem : order.getItems()) {
-                String itemName = "N/A";
-                if (productService != null && orderItem.getItemId() != null) {
-                    try {
-                        Item item = productService.getProductById(orderItem.getItemId()).orElse(null);
-                        if (item != null) {
-                            itemName = item.getName();
-                        }
-                    } catch (Exception e) {
-                        // Keep default "N/A" if item not found
-                    }
-                }
-                details.append("- ").append(itemName)
-                       .append(" (SL: ").append(orderItem.getQuantity())
-                       .append(", ĐG: ").append(String.format("%,.0f", orderItem.getUnitPrice())).append(" VNĐ)\n");
-            }
-            details.append("\n");
-        }
-
-        details.append("Tổng tiền: ").append(String.format("%,.0f VNĐ", order.getGrandTotal()));
-
-        orderDetailsArea.setText(details.toString());
-    }
-
-    private void updateStatusUpdateButton(Order order) {
-        boolean canUpdate = order != null &&
-                           (order.getStatus() == Order.OrderStatus.PENDING_PAYMENT ||
-                            order.getStatus() == Order.OrderStatus.PAID ||
-                            order.getStatus() == Order.OrderStatus.PACKED ||
-                            order.getStatus() == Order.OrderStatus.SHIPPED);
-
-        btnUpdateStatus.setDisable(!canUpdate);
-        btnCancelOrder.setDisable(order == null ||
-                                 order.getStatus() == Order.OrderStatus.CANCELED ||
-                                 order.getStatus() == Order.OrderStatus.DELIVERED);
     }
 
     @FXML
-    private void handleUpdateStatus() {
-        Order selected = orderTable.getSelectionModel().getSelectedItem();
-        String newStatusStr = statusUpdateCombo.getValue();
+    private void updateStatus() {
+        if (orderService == null) { showError("Thiếu OrderService (chưa inject)."); return; }
 
-        if (selected == null) {
-            showError("Vui lòng chọn đơn hàng!");
-            return;
-        }
+        Order selected = tblOrders.getSelectionModel().getSelectedItem();
+        if (selected == null) { showError("Vui lòng chọn 1 đơn hàng trong bảng."); return; }
 
-        if (newStatusStr == null || newStatusStr.isEmpty()) {
-            showError("Vui lòng chọn trạng thái mới!");
-            return;
-        }
+        String statusVN = cbStatus.getValue();
+        if (statusVN == null || statusVN.isBlank()) { showError("Vui lòng chọn trạng thái."); return; }
 
-        Order.OrderStatus newStatus = translateStatusReverse(newStatusStr);
-
-        // Validate status transition
-        if (!isValidStatusTransition(selected.getStatus(), newStatus)) {
-            showError("Không thể chuyển trạng thái này!");
-            return;
-        }
+        Order.OrderStatus newStatus = translateStatusReverse(statusVN);
 
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Xác nhận");
-        confirm.setHeaderText("Cập nhật trạng thái đơn hàng");
-        confirm.setContentText("Bạn có chắc muốn cập nhật trạng thái đơn hàng thành '" + newStatusStr + "'?");
-
-        confirm.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
+        confirm.setHeaderText("Cập nhật trạng thái");
+        confirm.setContentText("Cập nhật đơn " + safe(selected.getOrderNumber()) + " sang '" + statusVN + "' ?");
+        confirm.showAndWait().ifPresent(btn -> {
+            if (btn == ButtonType.OK) {
                 try {
                     orderService.updateOrderStatus(selected.getId(), newStatus, 1L);
                     loadOrders();
                     showInfo("Cập nhật trạng thái thành công!");
-                } catch (Exception e) {
-                    showError("Lỗi cập nhật trạng thái: " + e.getMessage());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    showError("Lỗi cập nhật trạng thái: " + ex.getMessage());
                 }
             }
         });
     }
 
     @FXML
-    private void handleCancelOrder() {
-        Order selected = orderTable.getSelectionModel().getSelectedItem();
+    private void cancelOrder() {
+        if (orderService == null) { showError("Thiếu OrderService (chưa inject)."); return; }
 
-        if (selected == null) {
-            showError("Vui lòng chọn đơn hàng!");
-            return;
-        }
-
-        if (selected.getStatus() == Order.OrderStatus.CANCELED) {
-            showError("Đơn hàng đã bị hủy!");
-            return;
-        }
-
-        if (selected.getStatus() == Order.OrderStatus.DELIVERED) {
-            showError("Không thể hủy đơn hàng đã giao!");
-            return;
-        }
+        Order selected = tblOrders.getSelectionModel().getSelectedItem();
+        if (selected == null) { showError("Vui lòng chọn 1 đơn hàng trong bảng."); return; }
 
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Xác nhận");
         confirm.setHeaderText("Hủy đơn hàng");
-        confirm.setContentText("Bạn có chắc muốn hủy đơn hàng này?");
-
-        confirm.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
+        confirm.setContentText("Bạn có chắc muốn hủy đơn " + safe(selected.getOrderNumber()) + " ?");
+        confirm.showAndWait().ifPresent(btn -> {
+            if (btn == ButtonType.OK) {
                 try {
                     orderService.cancelOrder(selected.getId(), 1L);
                     loadOrders();
                     showInfo("Hủy đơn hàng thành công!");
-                } catch (Exception e) {
-                    showError("Lỗi hủy đơn hàng: " + e.getMessage());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    showError("Lỗi hủy đơn: " + ex.getMessage());
                 }
             }
         });
     }
 
-    @FXML
-    private void handleRefresh() {
-        loadOrders();
+    // ====== Fill form ======
+    private void fillForm(Order o) {
+        txtOrderNumber.setText(safe(o.getOrderNumber()));
+        txtAccountId.setText(o.getAccountId() == null ? "" : String.valueOf(o.getAccountId()));
+        txtSubtotal.setText(formatMoney(o.getSubtotal()));
+        txtGrandTotal.setText(formatMoney(o.getGrandTotal()));
+        txtPlacedAt.setText(o.getPlacedAt() == null ? "" : o.getPlacedAt().toString());
+        txtDiscountCode.setText(safe(extractDiscountCode(o)));
+        txtNote.setText("");
+        cbStatus.setValue(translateStatus(o.getStatus()));
     }
 
-    private boolean isValidStatusTransition(Order.OrderStatus current, Order.OrderStatus next) {
-        switch (current) {
-            case PENDING_PAYMENT:
-                return next == Order.OrderStatus.PAID || next == Order.OrderStatus.CANCELED;
-            case PAID:
-                return next == Order.OrderStatus.PACKED || next == Order.OrderStatus.CANCELED;
-            case PACKED:
-                return next == Order.OrderStatus.SHIPPED || next == Order.OrderStatus.CANCELED;
-            case SHIPPED:
-                return next == Order.OrderStatus.DELIVERED;
-            default:
-                return false;
+    private String extractDiscountCode(Order o) {
+        String[] getters = {
+                "getDiscountCode",
+                "getCouponCode",
+                "getVoucherCode",
+                "getPromoCode",
+                "getPromotionCode"
+        };
+        for (String g : getters) {
+            try {
+                Method m = o.getClass().getMethod(g);
+                Object v = m.invoke(o);
+                if (v != null) return v.toString();
+            } catch (Exception ignored) {}
         }
+        return "";
+    }
+
+    private String formatMoney(BigDecimal v) {
+        BigDecimal val = (v == null) ? BigDecimal.ZERO : v;
+        return String.format("%,.0f đ", val).replace(',', '.');
     }
 
     private String translateStatus(Order.OrderStatus status) {
-        if (status == null) return "";
-        switch (status) {
-            case PENDING_PAYMENT: return "Chờ xử lý";
-            case PAID: return "Đã xác nhận";
-            case PACKED: return "Đang xử lý";
-            case SHIPPED: return "Đang giao";
-            case DELIVERED: return "Đã giao";
-            case CLOSED: return "Hoàn thành";
-            case CANCELED: return "Đã hủy";
-            default: return status.name();
-        }
+        if (status == null) return "Chờ xử lý";
+        return switch (status) {
+            case PENDING_PAYMENT -> "Chờ xử lý";
+            case PAID -> "Đã xác nhận";
+            case PACKED -> "Đang xử lý";
+            case SHIPPED -> "Đang giao";
+            case DELIVERED -> "Đã giao";
+            case CANCELED -> "Đã hủy";
+            case CLOSED -> "Đã giao";
+            default -> "Chờ xử lý";
+        };
     }
 
-    private Order.OrderStatus translateStatusReverse(String status) {
-        switch (status) {
-            case "Chờ xử lý": return Order.OrderStatus.PENDING_PAYMENT;
-            case "Đã xác nhận": return Order.OrderStatus.PAID;
-            case "Đang xử lý": return Order.OrderStatus.PACKED;
-            case "Đang giao": return Order.OrderStatus.SHIPPED;
-            case "Đã giao": return Order.OrderStatus.DELIVERED;
-            case "Đã hủy": return Order.OrderStatus.CANCELED;
-            default: return Order.OrderStatus.PENDING_PAYMENT;
-        }
+    private Order.OrderStatus translateStatusReverse(String statusVN) {
+        if (statusVN == null) return Order.OrderStatus.PENDING_PAYMENT;
+        return switch (statusVN) {
+            case "Chờ xử lý" -> Order.OrderStatus.PENDING_PAYMENT;
+            case "Đã xác nhận" -> Order.OrderStatus.PAID;
+            case "Đang xử lý" -> Order.OrderStatus.PACKED;
+            case "Đang giao" -> Order.OrderStatus.SHIPPED;
+            case "Đã giao" -> Order.OrderStatus.DELIVERED;
+            case "Đã hủy" -> Order.OrderStatus.CANCELED;
+            default -> Order.OrderStatus.PENDING_PAYMENT;
+        };
     }
 
-    private String getStatusStyle(Order.OrderStatus status) {
-        if (status == null) return "";
-        switch (status) {
-            case DELIVERED:
-            case CLOSED:
-                return "-fx-text-fill: green; -fx-font-weight: bold;";
-            case CANCELED:
-                return "-fx-text-fill: red; -fx-font-weight: bold;";
-            case SHIPPED:
-                return "-fx-text-fill: blue; -fx-font-weight: bold;";
-            case PAID:
-            case PACKED:
-                return "-fx-text-fill: orange; -fx-font-weight: bold;";
-            default:
-                return "-fx-text-fill: gray; -fx-font-weight: bold;";
-        }
+    private String safe(String s) { return s == null ? "" : s; }
+
+    private void showInfo(String msg) {
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setTitle("Thông báo");
+        a.setHeaderText(null);
+        a.setContentText(msg);
+        a.showAndWait();
     }
 
-    private void showInfo(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Thông báo");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Lỗi");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+    private void showError(String msg) {
+        Alert a = new Alert(Alert.AlertType.ERROR);
+        a.setTitle("Lỗi");
+        a.setHeaderText(null);
+        a.setContentText(msg);
+        a.showAndWait();
     }
 }

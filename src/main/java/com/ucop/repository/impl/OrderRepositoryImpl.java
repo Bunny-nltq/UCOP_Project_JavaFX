@@ -2,6 +2,7 @@ package com.ucop.repository.impl;
 
 import com.ucop.entity.Order;
 import com.ucop.repository.OrderRepository;
+import org.hibernate.Hibernate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -29,9 +30,7 @@ public class OrderRepositoryImpl implements OrderRepository {
         } catch (Exception e) {
             try {
                 if (tx != null && tx.isActive()) tx.rollback();
-            } catch (Exception ignore) {
-                // tránh crash do "connection is closed"
-            }
+            } catch (Exception ignore) {}
             throw e;
         }
     }
@@ -47,7 +46,6 @@ public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public Optional<Order> findByOrderNumber(String orderNumber) {
         if (orderNumber == null || orderNumber.trim().isEmpty()) return Optional.empty();
-
         try (Session session = sessionFactory.openSession()) {
             return session.createQuery(
                             "from Order o where o.orderNumber = :on",
@@ -58,10 +56,56 @@ public class OrderRepositoryImpl implements OrderRepository {
         }
     }
 
+    /**
+     * ✅ FIX: fetch join items + force initialize trước khi đóng session
+     * => order.getItems() sẽ không còn LazyInitializationException sau khi repo return
+     */
+    public Optional<Order> findByIdWithItems(Long id) {
+        if (id == null) return Optional.empty();
+
+        try (Session session = sessionFactory.openSession()) {
+            String hql = "select distinct o from Order o left join fetch o.items where o.id = :id";
+            Order o = session.createQuery(hql, Order.class)
+                    .setParameter("id", id)
+                    .uniqueResult();
+
+            if (o != null) {
+                // force init collection items (chắc chắn 100% không còn proxy sau khi session đóng)
+                Hibernate.initialize(o.getItems());
+            }
+
+            return Optional.ofNullable(o);
+        }
+    }
+
+    /**
+     * (Optional) Nếu bạn muốn chạy trong transaction (an toàn hơn khi mapping phức tạp)
+     */
+    public Optional<Order> findByIdWithItemsAndTx(Long id) {
+        if (id == null) return Optional.empty();
+
+        Transaction tx = null;
+        try (Session session = sessionFactory.openSession()) {
+            tx = session.beginTransaction();
+
+            String hql = "select distinct o from Order o left join fetch o.items where o.id = :id";
+            Order o = session.createQuery(hql, Order.class)
+                    .setParameter("id", id)
+                    .uniqueResult();
+
+            if (o != null) Hibernate.initialize(o.getItems());
+
+            tx.commit();
+            return Optional.ofNullable(o);
+        } catch (Exception e) {
+            if (tx != null && tx.isActive()) tx.rollback();
+            throw e;
+        }
+    }
+
     @Override
     public List<Order> findByAccountId(Long accountId) {
         if (accountId == null) return List.of();
-
         try (Session session = sessionFactory.openSession()) {
             return session.createQuery(
                             "from Order o where o.accountId = :aid order by o.placedAt desc",
@@ -72,9 +116,6 @@ public class OrderRepositoryImpl implements OrderRepository {
         }
     }
 
-    /**
-     * ✅ FIX: status là enum trong entity -> nhận String thì parse, nhận sai trả list rỗng
-     */
     @Override
     public List<Order> findByStatus(String status) {
         if (status == null || status.trim().isEmpty()) return List.of();
@@ -112,13 +153,11 @@ public class OrderRepositoryImpl implements OrderRepository {
             tx = session.beginTransaction();
 
             Order o = session.get(Order.class, id);
-            if (o != null) {
-                session.remove(o);
-            }
+            if (o != null) session.remove(o);
 
             tx.commit();
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            if (tx != null && tx.isActive()) tx.rollback();
             throw e;
         }
     }
@@ -130,10 +169,10 @@ public class OrderRepositoryImpl implements OrderRepository {
         Transaction tx = null;
         try (Session session = sessionFactory.openSession()) {
             tx = session.beginTransaction();
-            session.merge(order); // ✅ merge thay cho update
+            session.merge(order);
             tx.commit();
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            if (tx != null && tx.isActive()) tx.rollback();
             throw e;
         }
     }

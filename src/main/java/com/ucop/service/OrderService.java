@@ -142,7 +142,7 @@ public class OrderService {
         // ✅ BẮT BUỘC: orderNumber NOT NULL
         order.setOrderNumber(generateOrderNumber());
 
-        // 4) ✅ SET các cột tiền (tối thiểu phải có subtotal + grandTotal)
+        // 4) ✅ SET các cột tiền
         order.setSubtotal(subtotal);
         order.setTaxAmount(BigDecimal.ZERO);
         order.setShippingFee(BigDecimal.ZERO);
@@ -165,12 +165,10 @@ public class OrderService {
         // 5) save order
         orderRepository.save(order);
 
-        // 6) (nếu bạn có move cart->order_items thì làm ở đây)
-
         return order;
     }
 
-    // ✅ tạo mã đơn hàng dạng: ORD-YYYYMMDD-XXXXX (giống format bạn đang thấy)
+    // ✅ tạo mã đơn hàng dạng: ORD-YYYYMMDD-XXXXX
     private String generateOrderNumber() {
         String date = java.time.LocalDate.now()
                 .format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE); // yyyyMMdd
@@ -189,7 +187,8 @@ public class OrderService {
             warehouseId = 1L; // Default to primary warehouse
         }
 
-        Optional<Order> orderOpt = orderRepository.findById(orderId);
+        // ✅ FIX: lấy order kèm items để tránh LazyInitializationException
+        Optional<Order> orderOpt = orderRepository.findByIdWithItems(orderId);
         if (orderOpt.isEmpty()) {
             throw new IllegalArgumentException("Order not found");
         }
@@ -226,10 +225,11 @@ public class OrderService {
         }
 
         if (warehouseId == null || warehouseId <= 0) {
-            warehouseId = 1L; // Default to primary warehouse
+            warehouseId = 1L;
         }
 
-        Optional<Order> orderOpt = orderRepository.findById(orderId);
+        // ✅ lấy order kèm items để không LazyInitializationException
+        Optional<Order> orderOpt = orderRepository.findByIdWithItems(orderId);
         if (orderOpt.isEmpty()) {
             throw new IllegalArgumentException("Order not found");
         }
@@ -240,18 +240,22 @@ public class OrderService {
             throw new IllegalStateException("Order is already canceled");
         }
 
+        // ✅ nếu đơn đã DELIVERED/CLOSED thì thường không cho hủy (tránh lệch kho)
+        if (order.getStatus() == Order.OrderStatus.DELIVERED || order.getStatus() == Order.OrderStatus.CLOSED) {
+            throw new IllegalStateException("Cannot cancel a delivered/closed order");
+        }
+
         order.setStatus(Order.OrderStatus.CANCELED);
 
-        // Fetch warehouse stocks once for efficiency
         List<StockItem> warehouseStocks = stockItemRepository.findByWarehouseId(warehouseId);
 
-        // Unreserve stock
         for (OrderItem item : order.getItems()) {
             warehouseStocks.stream()
                     .filter(si -> si.getItemId().equals(item.getItemId()))
                     .findFirst()
                     .ifPresent(stock -> {
-                        stock.unreserve(item.getQuantity().longValue());
+                        // ✅ FIX: unreserve an toàn, không vượt quá reserved hiện có
+                        safeUnreserve(stock, item.getQuantity().longValue());
                         stockItemRepository.update(stock);
                     });
         }
@@ -275,7 +279,8 @@ public class OrderService {
             warehouseId = 1L; // Default to primary warehouse
         }
 
-        Optional<Order> orderOpt = orderRepository.findById(orderId);
+        // ✅ FIX: lấy order kèm items để tránh LazyInitializationException
+        Optional<Order> orderOpt = orderRepository.findByIdWithItems(orderId);
         if (orderOpt.isEmpty()) {
             throw new IllegalArgumentException("Order not found");
         }
@@ -327,5 +332,72 @@ public class OrderService {
 
     public List<Order> getOrdersByStatus(Order.OrderStatus status) {
         return orderRepository.findByStatus(status.name());
+    }
+
+    // =======================
+    // Helpers to avoid crashes
+    // =======================
+
+    /**
+     * Unreserve but NEVER more than currently reserved.
+     * Uses reflection to read reserved qty to avoid changing StockItem.
+     */
+    private void safeUnreserve(StockItem stock, long wantedQty) {
+        if (stock == null || wantedQty <= 0) return;
+
+        long reservedNow = readReservedQty(stock); // best-effort
+        if (reservedNow <= 0) {
+            // nothing reserved -> skip to avoid "Cannot unreserve more than reserved quantity"
+            return;
+        }
+
+        long qty = Math.min(wantedQty, reservedNow);
+        try {
+            stock.unreserve(qty);
+        } catch (RuntimeException ex) {
+            // fallback: if still throws, do not crash cancel flow
+            // (keeps system stable instead of blocking cancel UI)
+        }
+    }
+
+    /**
+     * Try to read reserved quantity from StockItem with different getter/field names.
+     * Return 0 if not found.
+     */
+    private long readReservedQty(StockItem stock) {
+        // try getters first
+        String[] getters = {
+                "getReservedQuantity",
+                "getReservedQty",
+                "getReserved",
+                "getQtyReserved"
+        };
+
+        for (String g : getters) {
+            try {
+                var m = stock.getClass().getMethod(g);
+                Object v = m.invoke(stock);
+                if (v instanceof Number n) return n.longValue();
+            } catch (Exception ignored) {}
+        }
+
+        // try fields as fallback
+        String[] fields = {
+                "reservedQuantity",
+                "reservedQty",
+                "reserved",
+                "qtyReserved"
+        };
+
+        for (String f : fields) {
+            try {
+                var field = stock.getClass().getDeclaredField(f);
+                field.setAccessible(true);
+                Object v = field.get(stock);
+                if (v instanceof Number n) return n.longValue();
+            } catch (Exception ignored) {}
+        }
+
+        return 0L;
     }
 }

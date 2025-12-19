@@ -31,37 +31,20 @@
             <!-- =================== MENU =================== -->
             <HBox alignment="CENTER_LEFT" spacing="20" styleClass="admin-menu">
 
-                <Button text="📦 Orders"
+                <Button text="Quản lý đơn hàng"
                         onAction="#openOrders"
                         styleClass="staff-menu-btn"/>
 
-                <Button text="🎫 Tickets"
-                        onAction="#openTickets"
-                        styleClass="staff-menu-btn"/>
-
-                <Button text="🏬 Inventory"
-                        onAction="#openWarehouse"
-                        styleClass="staff-menu-btn"/>
-
-                <Button text="💰 Payments"
-                        onAction="#openPayments"
-                        styleClass="staff-menu-btn"/>
-
-                <Button text="🚚 Shipment"
-                        onAction="#openShipment"
-                        styleClass="staff-menu-btn"/>
-
-                <Button text="↩ Refunds"
-                        onAction="#openRefunds"
-                        styleClass="staff-menu-btn"/>
-
-                <!-- ⭐⭐ NEW: CATEGORY & ITEM MANAGEMENT ⭐⭐ -->
-                <Button text="📂 Categories"
+                <Button text="Danh mục sản phẩm"
                         onAction="#openCategoryManager"
                         styleClass="staff-menu-btn"/>
 
-                <Button text="🛒 Items"
+                <Button text="Danh sách sản phẩm"
                         onAction="#openItemManager"
+                        styleClass="staff-menu-btn"/>
+                        
+                <Button text="Mã giảm giá"
+                        onAction="#openPromotions"
                         styleClass="staff-menu-btn"/>
 
             </HBox>
