@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.ucop.controller.customer.CustomerProfileController"
+            prefWidth="1200" prefHeight="600">
+
+    <!-- ===== HEADER ===== -->
+    <top>
+        <HBox alignment="CENTER"
+              style="-fx-background-color:#4a4e69; -fx-padding:16;">
+            <Label text="Thông tin cá nhân"
+                   style="-fx-text-fill:white; -fx-font-size:22px; -fx-font-weight:bold;" />
+        </HBox>
+    </top>
+
+    <!-- ===== CENTER FORM (CĂN GIỮA TOÀN BỘ) ===== -->
+    <center>
+        <VBox spacing="25"
+              alignment="CENTER"
+              style="-fx-padding:40;">
+            
+            <!-- FORM GRID -->
+            <GridPane hgap="20" vgap="20" alignment="CENTER">
+
+                <!-- Họ tên -->
+                <Label text="Họ tên:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtFullname"
+                           prefWidth="350"
+                           GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                <!-- Email -->
+                <Label text="Email:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtEmail"
+                           editable="false"
+                           prefWidth="350"
+                           GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                <!-- Số điện thoại -->
+                <Label text="Số điện thoại:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtPhone"
+                           prefWidth="350"
+                           GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                <!-- Địa chỉ -->
+                <Label text="Địa chỉ:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtAddress"
+                           prefWidth="350"
+                           GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+            </GridPane>
+
+            <!-- Button -->
+            <Button text="Cập nhật"
+                    prefWidth="180"
+                    style="-fx-background-color:#4CAF50; -fx-text-fill:white;"
+                    onAction="#updateProfile"/>
+
+            <!-- Thông báo -->
+            <Label fx:id="lblMsg"
+                   style="-fx-text-fill:red;" />
+
+        </VBox>
+    </center>
+
+</BorderPane>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.ucop.controller.customer.CustomerCartController"
+      spacing="10"
+      style="-fx-background-color: transparent;">
+
+    <!-- HEADER -->
+    <HBox alignment="CENTER_LEFT" spacing="15" styleClass="header-box">
+        <padding>
+            <Insets top="20" right="20" bottom="10" left="20"/>
+        </padding>
+
+        <Label text="🛒 Giỏ Hàng Của Bạn"
+               style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+
+        <Region HBox.hgrow="ALWAYS"/>
+    </HBox>
+
+    <!-- CART ITEMS -->
+    <ScrollPane fx:id="scrollCart"
+                fitToWidth="true"
+                VBox.vgrow="ALWAYS">
+
+        <VBox fx:id="cartItemsContainer" spacing="10">
+            <padding>
+                <Insets top="10" right="20" bottom="10" left="20"/>
+            </padding>
+
+            <Label fx:id="lblEmptyCart"
+                   text="Giỏ hàng của bạn đang trống"
+                   style="-fx-font-size: 18px; -fx-text-fill: #666;"
+                   visible="false"
+                   managed="false"/>
+        </VBox>
+    </ScrollPane>
+
+    <!-- SUMMARY -->
+    <VBox fx:id="cartSummary"
+          spacing="10"
+          visible="false"
+          managed="false">
+
+        <padding>
+            <Insets top="20" right="20" bottom="20" left="20"/>
+        </padding>
+
+        <Separator/>
+
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Label text="Tổng sản phẩm:"/>
+            <Label fx:id="lblTotalItems" text="0 sản phẩm"
+                   style="-fx-font-weight: bold;"/>
+        </HBox>
+
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Label text="Tạm tính:"/>
+            <Label fx:id="lblSubtotalAmount"
+                   style="-fx-font-weight: bold;"/>
+        </HBox>
+
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Label text="Giảm giá:"/>
+            <Label fx:id="lblDiscountAmount"
+                   style="-fx-font-weight: bold; -fx-text-fill:#27ae60;"/>
+        </HBox>
+
+        <Separator/>
+
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Label text="TỔNG THANH TOÁN:"
+                   style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+            <Label fx:id="lblTotalAmount"
+                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill:#e74c3c;"/>
+        </HBox>
+
+        <HBox spacing="15" alignment="CENTER_RIGHT">
+            <Button text="Xóa Giỏ Hàng"
+                    onAction="#handleClearCart"/>
+
+            <Button text="Thanh Toán →"
+                    onAction="#handleCheckout"
+                    style="-fx-font-size:16px;"/>
+        </HBox>
+
+    </VBox>
+
+</VBox>

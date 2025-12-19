@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.ucop.controller.customer.CustomerDashboardController"
+            prefWidth="1400" prefHeight="900"
+            stylesheets="@../style/main.css">
+
+    <!-- =================== TOP =================== -->
+    <top>
+        <VBox spacing="0">
+
+            <!-- HEADER -->
+            <HBox spacing="20" alignment="CENTER_LEFT" styleClass="header">
+
+                <Label text="UCOP – CUSTOMER PORTAL"
+                       styleClass="header-title"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <!-- ❌ bỏ fx:id -->
+                <Label text="Hello, Customer!"
+                       styleClass="header-label"/>
+
+                <Button text="Đăng xuất"
+                        onAction="#logout"
+                        styleClass="btn-danger"/>
+            </HBox>
+
+            <!-- MENU -->
+            <HBox alignment="CENTER_LEFT"
+                  spacing="20"
+                  styleClass="admin-menu">
+
+                <Button text="Sản phẩm"
+                        styleClass="admin-menu-btn"
+                        onAction="#openItems"/>
+
+                <Button text="Giỏ hàng"
+                        styleClass="admin-menu-btn"
+                        onAction="#openCart"/>
+
+                <Button text="Đơn hàng của tôi"
+                        styleClass="admin-menu-btn"
+                        onAction="#openOrders"/>
+
+                <Button text="Thông tin cá nhân"
+                        styleClass="admin-menu-btn"
+                        onAction="#openProfile"/>
+            </HBox>
+
+        </VBox>
+    </top>
+
+    <!-- =================== CENTER =================== -->
+    <center>
+        <StackPane fx:id="contentArea"
+                   style="-fx-padding: 20;">
+            <!-- Controller load view vào đây -->
+        </StackPane>
+    </center>
+
+    <!-- =================== FOOTER =================== -->
+    <bottom>
+        <HBox alignment="CENTER_LEFT"
+              spacing="10"
+              styleClass="footer">
+
+            <Label text="Trạng thái:"/>
+            <!-- ❌ bỏ fx:id -->
+            <Label text="Sẵn sàng"
+                   styleClass="status-ok"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <!-- ❌ bỏ fx:id -->
+            <Label text="03/12/2025 21:30"/>
+            <Label text=" | "/>
+            <Label text="Phiên bản 1.0.0"/>
+
+        </HBox>
+    </bottom>
+
+</BorderPane>

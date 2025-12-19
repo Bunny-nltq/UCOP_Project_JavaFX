@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.ucop.controller.customer.CustomerItemsController">
+
+    <!-- TOP -->
+    <top>
+        <VBox>
+            <!-- Title -->
+            <HBox spacing="10"
+                  alignment="CENTER_LEFT"
+                  style="-fx-background-color: #3F51B5; -fx-padding: 15;">
+                <Label text="🛍️ Danh sách sản phẩm" textFill="WHITE">
+                    <font>
+                        <Font name="System Bold" size="20"/>
+                    </font>
+                </Label>
+            </HBox>
+
+            <!-- Search / Filter -->
+            <HBox spacing="12"
+                  alignment="CENTER_LEFT"
+                  style="-fx-padding: 15; -fx-background-color: #F5F5F5;">
+
+                <TextField fx:id="txtSearch"
+                           promptText="Tìm kiếm sản phẩm..."
+                           prefWidth="260"/>
+
+                <ComboBox fx:id="cboCategory"
+                          prefWidth="200"
+                          onAction="#handleSearch"/>
+
+                <Button text="🔍 Tìm"
+                        onAction="#handleSearch"
+                        style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- CENTER -->
+    <center>
+        <ScrollPane fitToWidth="true"
+                    hbarPolicy="NEVER"
+                    vbarPolicy="AS_NEEDED"
+                    style="-fx-background-color: transparent;">
+            <VBox spacing="10">
+                <padding>
+                    <Insets top="20" right="20" bottom="20" left="20"/>
+                </padding>
+
+                <GridPane fx:id="gridItems"
+                          hgap="20"
+                          vgap="20"
+                          style="-fx-background-color: transparent;">
+
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="33"/>
+                        <ColumnConstraints percentWidth="33"/>
+                        <ColumnConstraints percentWidth="34"/>
+                    </columnConstraints>
+
+                </GridPane>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- BOTTOM -->
+    <bottom>
+        <HBox alignment="CENTER_LEFT"
+              spacing="10"
+              style="-fx-padding: 12; -fx-background-color: #F5F5F5;">
+            <Label fx:id="lblTotal"
+                   text="Tổng: 0 sản phẩm"
+                   style="-fx-font-weight: bold;"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<hibernate-configuration xmlns="http://www.hibernate.org/xsd/orm/cfg">
+    <session-factory>
+
+        <!-- Database Connection -->
+        <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+        <property name="hibernate.connection.url">
+             jdbc:mysql://localhost:3306/ucop_project?useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=UTC&amp;characterEncoding=UTF-8&amp;useUnicode=true
+        </property>
+        <property name="hibernate.connection.username">root</property>
+        <property name="hibernate.connection.password"></property>
+
+        <!-- Hibernate Settings -->
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+        <property name="hibernate.show_sql">true</property>
+        <property name="hibernate.format_sql">true</property>
+
+        <!-- IMPORTANT: Prevent Hibernate from altering tables -->
+        <property name="hibernate.hbm2ddl.auto">none</property>
+
+        <!-- OPTIONAL: Remove c3p0 warning by adding dependency or remove these lines -->
+        <property name="hibernate.c3p0.min_size">5</property>
+        <property name="hibernate.c3p0.max_size">20</property>
+        <property name="hibernate.c3p0.timeout">1800</property>
+        <property name="hibernate.c3p0.max_statements">50</property>
+
+        <!-- Entity Mappings -->
+        <mapping class="com.ucop.entity.Role"/>
+        <mapping class="com.ucop.entity.User"/>
+        <mapping class="com.ucop.entity.AccountProfile"/>
+        <mapping class="com.ucop.entity.Category"/>
+        <mapping class="com.ucop.entity.Item"/>
+        <mapping class="com.ucop.entity.Product"/>
+        <mapping class="com.ucop.entity.AuditLog"/>
+
+        <mapping class="com.ucop.entity.Warehouse"/>
+        <mapping class="com.ucop.entity.StockItem"/>
+        <mapping class="com.ucop.entity.Customer"/>
+        <mapping class="com.ucop.entity.Cart"/>
+        <mapping class="com.ucop.entity.CartItem"/>
+        <mapping class="com.ucop.entity.Order"/>
+        <mapping class="com.ucop.entity.OrderItem"/>
+        <mapping class="com.ucop.entity.Payment"/>
+        <mapping class="com.ucop.entity.Refund"/>
+        <mapping class="com.ucop.entity.StockItem"/>
+        <mapping class="com.ucop.entity.Shipment"/>
+        <mapping class="com.ucop.entity.Appointment"/>
+        <mapping class="com.ucop.entity.Promotion"/>
+        <mapping class="com.ucop.entity.PromotionUsage"/>
+
+    </session-factory>
+</hibernate-configuration>

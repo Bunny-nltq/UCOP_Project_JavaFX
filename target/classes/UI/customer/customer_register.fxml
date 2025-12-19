@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.ucop.controller.customer.RegisterController"
+            prefWidth="400" prefHeight="350">
+
+    <children>
+
+        <Label text="Create Account"
+               layoutX="130" layoutY="25"
+               style="-fx-font-size:20px; -fx-font-weight:bold;"/>
+
+        <!-- Username -->
+        <TextField fx:id="txtUsername"
+                   layoutX="100" layoutY="80"
+                   prefWidth="200"
+                   promptText="Username"/>
+
+        <!-- Password -->
+        <PasswordField fx:id="txtPassword"
+                       layoutX="100" layoutY="120"
+                       prefWidth="200"
+                       promptText="Password"/>
+
+        <!-- Confirm Password -->
+        <PasswordField fx:id="txtConfirm"
+                       layoutX="100" layoutY="160"
+                       prefWidth="200"
+                       promptText="Confirm Password"/>
+
+        <!-- Email -->
+        <TextField fx:id="txtEmail"
+                   layoutX="100" layoutY="200"
+                   prefWidth="200"
+                   promptText="Email"/>
+
+        <!-- Register button -->
+        <Button text="Register"
+                layoutX="100" layoutY="250"
+                prefWidth="80"
+                onAction="#handleRegister"/>
+
+        <!-- Back button -->
+        <Button text="Back"
+                layoutX="220" layoutY="250"
+                prefWidth="80"
+                onAction="#goLogin"/>
+
+        <!-- ⭐ Quan trọng: Label để hiển thị báo lỗi / thành công -->
+        <Label fx:id="lblMsg"
+               layoutX="100" layoutY="290"
+               textFill="red"/>
+
+    </children>
+</AnchorPane>
