@@ -15,7 +15,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import org.hibernate.SessionFactory;
 
-import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URL;
 
 public class CustomerMainController {
@@ -28,7 +28,7 @@ public class CustomerMainController {
     private OrderService orderService;
     private CartService cartService;
 
-    // TODO: sau này lấy từ Login, tạm để demo
+    // ✅ Nên được set từ LoginController; tạm fallback để app không null crash
     private Long currentAccountId = 1L;
 
     @FXML
@@ -38,26 +38,22 @@ public class CustomerMainController {
         initializeServices();
         ensureCartService();
 
-        System.out.println("[DEBUG][CustomerMain] services: itemService=" + (itemService != null)
-                + ", cartService=" + (cartService != null)
-                + ", orderService=" + (orderService != null));
-
         if (lblWelcome != null) {
             lblWelcome.setText("Chào mừng, Khách hàng!");
         }
 
-        // Load UI sau khi scene ready
         Platform.runLater(() -> {
             updateCartCount();
             handleItems();
         });
     }
 
+    // ================= SERVICES =================
+
     private void initializeServices() {
         SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
         if (sessionFactory == null) throw new IllegalStateException("SessionFactory is null");
 
-        // ItemService tự lấy SessionFactory
         itemService = new ItemService();
 
         CartRepository cartRepository = new CartRepositoryImpl(sessionFactory);
@@ -79,7 +75,7 @@ public class CustomerMainController {
         if (cartService != null) return;
 
         System.out.println("[DEBUG][CustomerMain] cartService null -> fallback create");
-        var sf = HibernateUtil.getSessionFactory();
+        SessionFactory sf = HibernateUtil.getSessionFactory();
         cartService = new CartService(new CartRepositoryImpl(sf));
         System.out.println("[DEBUG][CustomerMain] cartService fallback created=" + (cartService != null));
     }
@@ -90,6 +86,23 @@ public class CustomerMainController {
     public void handleItems() {
         loadItemsPage();
     }
+
+    @FXML
+    public void handleMyOrders() {
+        loadOrdersPage();
+    }
+
+    @FXML
+    public void handleCart() {
+        loadCartPage();
+    }
+
+    @FXML
+    public void handleLogout() {
+        showError("Chức năng đăng xuất chưa triển khai.");
+    }
+
+    // ================= LOAD PAGES =================
 
     private void loadItemsPage() {
         try {
@@ -108,23 +121,15 @@ public class CustomerMainController {
 
             FXMLLoader loader = new FXMLLoader(fxml);
             Parent page = loader.load();
+            Object controller = loader.getController();
 
-            CustomerItemsController controller = loader.getController();
             if (controller == null) {
-                showError("CustomerItemsController = null (check fx:controller trong customer_items.fxml)");
+                showError("Controller = null (check fx:controller trong customer_items.fxml)");
                 return;
             }
 
-            System.out.println("[DEBUG][CustomerMain] itemsController instance = " + controller);
-
-            // ✅ inject đầy đủ
-            controller.setCustomerMainController(this);
-            controller.setItemService(itemService);
-            controller.setCartService(cartService);
-            controller.setCurrentAccountId(getCurrentAccountId());
-
-            // ✅ truyền accountId dự phòng (bắt buộc CustomerItemsController phải có setter)
-            controller.setCurrentAccountId(currentAccountId);
+            // ✅ Inject mềm: controller con có gì thì set cái đó
+            injectCommon(controller);
 
             mainContainer.setCenter(page);
             updateCartCount();
@@ -135,8 +140,7 @@ public class CustomerMainController {
         }
     }
 
-    @FXML
-    public void handleMyOrders() {
+    private void loadOrdersPage() {
         try {
             if (mainContainer == null) return;
 
@@ -148,23 +152,22 @@ public class CustomerMainController {
 
             FXMLLoader loader = new FXMLLoader(fxml);
             Parent page = loader.load();
+            Object controller = loader.getController();
 
-            CustomerOrderController controller = loader.getController();
             if (controller != null) {
-                controller.setOrderService(orderService);
-                controller.setCurrentAccountId(currentAccountId);
+                injectCommon(controller);
+                // thường Orders chỉ cần orderService + accountId, injectCommon đã lo
             }
 
             mainContainer.setCenter(page);
 
-        } catch (IOException e) {
-            showError("Không thể tải trang đơn hàng: " + e.getMessage());
+        } catch (Exception e) {
             e.printStackTrace();
+            showError("Không thể tải trang đơn hàng: " + e.getMessage());
         }
     }
 
-    @FXML
-    public void handleCart() {
+    private void loadCartPage() {
         try {
             if (mainContainer == null) return;
 
@@ -178,26 +181,66 @@ public class CustomerMainController {
 
             FXMLLoader loader = new FXMLLoader(fxml);
             Parent page = loader.load();
+            Object controller = loader.getController();
 
-            CustomerCartController controller = loader.getController();
             if (controller != null) {
-                controller.setMainController(this);
-                controller.setServices(orderService, itemService, cartService);
-                controller.setCurrentAccountId(currentAccountId);
+                injectCommon(controller);
+
+                // ✅ Một số CartController của bạn dùng setServices(orderService,itemService,cartService)
+                invokeIfExists(controller, "setServices",
+                        new Class[]{OrderService.class, ItemService.class, CartService.class},
+                        new Object[]{orderService, itemService, cartService});
+
+                // ✅ Một số CartController cần loadCart() sau khi inject
+                invokeIfExists(controller, "loadCart", new Class[]{}, new Object[]{});
             }
 
             mainContainer.setCenter(page);
             updateCartCount();
 
-        } catch (IOException e) {
-            showError("Không thể tải trang giỏ hàng: " + e.getMessage());
+        } catch (Exception e) {
             e.printStackTrace();
+            showError("Không thể tải trang giỏ hàng: " + e.getMessage());
         }
     }
 
-    @FXML
-    public void handleLogout() {
-        showError("Chức năng đăng xuất chưa triển khai.");
+    // ================= INJECTION (ROBUST) =================
+
+    /**
+     * Inject những thứ hay dùng: mainController, services, currentAccountId.
+     * Dùng reflection để tránh lỗi do khác tên setter giữa các controller con.
+     */
+    private void injectCommon(Object controller) {
+        // Main controller setter: setMainController(...) hoặc setCustomerMainController(...)
+        invokeIfExists(controller, "setMainController",
+                new Class[]{CustomerMainController.class}, new Object[]{this});
+        invokeIfExists(controller, "setCustomerMainController",
+                new Class[]{CustomerMainController.class}, new Object[]{this});
+
+        // Services: setItemService, setCartService, setOrderService
+        invokeIfExists(controller, "setItemService",
+                new Class[]{ItemService.class}, new Object[]{itemService});
+        invokeIfExists(controller, "setCartService",
+                new Class[]{CartService.class}, new Object[]{cartService});
+        invokeIfExists(controller, "setOrderService",
+                new Class[]{OrderService.class}, new Object[]{orderService});
+
+        // accountId: setCurrentAccountId(Long)
+        invokeIfExists(controller, "setCurrentAccountId",
+                new Class[]{Long.class}, new Object[]{currentAccountId});
+    }
+
+    private void invokeIfExists(Object target, String methodName, Class<?>[] paramTypes, Object[] args) {
+        if (target == null) return;
+        try {
+            Method m = target.getClass().getMethod(methodName, paramTypes);
+            m.invoke(target, args);
+        } catch (NoSuchMethodException ignored) {
+            // controller không có method này -> bỏ qua
+        } catch (Exception e) {
+            System.out.println("[DEBUG][CustomerMain] invoke fail: "
+                    + target.getClass().getSimpleName() + "." + methodName + " -> " + e.getMessage());
+        }
     }
 
     // ================= CART COUNT =================
@@ -205,7 +248,7 @@ public class CustomerMainController {
     public void updateCartCount() {
         try {
             if (lblCartCount == null) return;
-            if (cartService == null) ensureCartService();
+            ensureCartService();
             if (cartService == null) return;
 
             if (currentAccountId == null) {
@@ -226,15 +269,15 @@ public class CustomerMainController {
 
     public ItemService getItemService() { return itemService; }
     public CartService getCartService() { return cartService; }
+    public OrderService getOrderService() { return orderService; }
     public Long getCurrentAccountId() { return currentAccountId; }
+    public BorderPane getMainContainer() { return mainContainer; }
 
     public void setCurrentAccountId(Long currentAccountId) {
         this.currentAccountId = currentAccountId;
-        System.out.println("[DEBUG] setCurrentAccountId called: " + currentAccountId);
+        System.out.println("[DEBUG][CustomerMain] setCurrentAccountId: " + currentAccountId);
         updateCartCount();
     }
-
-    public BorderPane getMainContainer() { return mainContainer; }
 
     // ================= UI HELP =================
 

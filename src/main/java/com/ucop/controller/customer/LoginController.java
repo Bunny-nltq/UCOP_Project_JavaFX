@@ -4,7 +4,21 @@ import com.ucop.controller.admin.AdminDashboardController;
 import com.ucop.controller.staff.StaffDashboardController;
 import com.ucop.entity.Role;
 import com.ucop.entity.User;
+
+import com.ucop.repository.CartRepository;
+import com.ucop.repository.OrderRepository;
+import com.ucop.repository.ShipmentRepository;
+import com.ucop.repository.StockItemRepository;
+import com.ucop.repository.impl.CartRepositoryImpl;
+import com.ucop.repository.impl.OrderRepositoryImpl;
+import com.ucop.repository.impl.ShipmentRepositoryImpl;
+import com.ucop.repository.impl.StockItemRepositoryImpl;
+
+import com.ucop.service.CartService;
+import com.ucop.service.ItemService;
+import com.ucop.service.OrderService;
 import com.ucop.service.UserService;
+
 import com.ucop.util.HashUtil;
 
 import javafx.event.ActionEvent;
@@ -17,6 +31,9 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
 public class LoginController {
 
     @FXML private TextField txtUser;
@@ -24,6 +41,17 @@ public class LoginController {
     @FXML private Label lblMsg;
 
     private final UserService userService = new UserService();
+
+    // ✅ Không dùng HibernateUtil: tự tạo SessionFactory 1 lần cho toàn app
+    private static SessionFactory SF;
+
+    private static SessionFactory getSessionFactory() {
+        if (SF == null) {
+            // cần có src/main/resources/hibernate.cfg.xml
+            SF = new Configuration().configure().buildSessionFactory();
+        }
+        return SF;
+    }
 
     @FXML
     public void handleLogin(ActionEvent e) {
@@ -48,7 +76,6 @@ public class LoginController {
             return;
         }
 
-        // Role
         String roleName = user.getRoles()
                 .stream()
                 .map(Role::getName)
@@ -81,12 +108,34 @@ public class LoginController {
                     root = loader.load();
 
                     CustomerDashboardController cusCtrl = loader.getController();
+
+                    // ✅ tạo và inject services để Cart/Orders không còn báo thiếu
+                    SessionFactory sf = getSessionFactory();
+
+                    ItemService itemService = new ItemService();
+
+                    CartRepository cartRepository = new CartRepositoryImpl(sf);
+                    OrderRepository orderRepository = new OrderRepositoryImpl(sf);
+                    StockItemRepository stockItemRepository = new StockItemRepositoryImpl(sf);
+                    ShipmentRepository shipmentRepository = new ShipmentRepositoryImpl(sf);
+
+                    CartService cartService = new CartService(cartRepository);
+                    OrderService orderService = new OrderService(
+                            orderRepository,
+                            cartRepository,
+                            stockItemRepository,
+                            shipmentRepository
+                    );
+
+                    cusCtrl.setItemService(itemService);
+                    cusCtrl.setCartService(cartService);
+                    cusCtrl.setOrderService(orderService);
+
+                    // set user + accountId (giữ logic của bạn)
                     cusCtrl.setCurrentUser(user);
 
-                    // ✅ FIX: truyền accountId để CustomerMain/Items dùng add-to-cart
                     Long accountId = null;
                     try {
-                        // nếu User.id là Integer
                         if (user.getId() != null) accountId = Long.valueOf(user.getId().toString());
                     } catch (Exception ignore) {}
 

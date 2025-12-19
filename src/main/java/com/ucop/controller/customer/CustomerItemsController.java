@@ -2,11 +2,9 @@ package com.ucop.controller.customer;
 
 import com.ucop.entity.Category;
 import com.ucop.entity.Item;
-import com.ucop.repository.impl.CartRepositoryImpl;
 import com.ucop.service.CartService;
 import com.ucop.service.CategoryService;
 import com.ucop.service.ItemService;
-import com.ucop.util.HibernateUtil;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -24,7 +22,8 @@ import java.util.*;
 
 public class CustomerItemsController implements Initializable {
 
-    private CustomerMainController customerMainController;
+    // ✅ Đồng bộ với dashboard hiện tại
+    private CustomerDashboardController customerMainController;
 
     @FXML private GridPane gridItems;
     @FXML private TextField txtSearch;
@@ -36,7 +35,6 @@ public class CustomerItemsController implements Initializable {
     private final CategoryService categoryService = new CategoryService();
     private Long currentAccountId;
 
-
     private List<Item> items = new ArrayList<>();
 
     // ================= INIT =================
@@ -46,23 +44,25 @@ public class CustomerItemsController implements Initializable {
 
         setupCategoryCombo();
 
-        // ✅ fallback itemService nếu chưa inject
+        // ✅ fallback itemService nếu chưa inject (vì ItemService của bạn có default constructor)
         if (itemService == null) {
             System.out.println("[DEBUG] ItemService not injected -> fallback create");
             itemService = new ItemService();
         }
-
-        // ✅ QUAN TRỌNG: luôn đảm bảo cartService có (không phụ thuộc itemService null)
-        ensureCartService();
 
         loadItems();
         renderItems();
     }
 
     // ================= INJECT =================
-    public void setCustomerMainController(CustomerMainController controller) {
+    public void setCustomerMainController(CustomerDashboardController controller) {
         this.customerMainController = controller;
         System.out.println("[DEBUG] setCustomerMainController called: " + (controller != null));
+    }
+
+    // ✅ alias để dashboard gọi setMainController(this) nếu có
+    public void setMainController(CustomerDashboardController controller) {
+        setCustomerMainController(controller);
     }
 
     public void setItemService(ItemService service) {
@@ -75,18 +75,17 @@ public class CustomerItemsController implements Initializable {
     public void setCartService(CartService service) {
         this.cartService = service;
         System.out.println("[DEBUG] setCartService called: " + (service != null));
-        // ✅ nếu inject null thì fallback luôn
-        ensureCartService();
     }
-    
+
     public void setCurrentAccountId(Long currentAccountId) {
         this.currentAccountId = currentAccountId;
         System.out.println("[DEBUG] setCurrentAccountId called: " + currentAccountId);
     }
 
-
     // ================= CATEGORY =================
     private void setupCategoryCombo() {
+        if (cboCategory == null) return;
+
         List<Category> categories = new ArrayList<>();
 
         Category all = new Category();
@@ -145,7 +144,7 @@ public class CustomerItemsController implements Initializable {
     private void handleSearch() {
         if (itemService == null) return;
 
-        Category selected = cboCategory.getValue();
+        Category selected = cboCategory != null ? cboCategory.getValue() : null;
         Long categoryId = (selected != null && selected.getId() != null)
                 ? ((Number) selected.getId()).longValue()
                 : null;
@@ -201,14 +200,16 @@ public class CustomerItemsController implements Initializable {
 
     // ================= CART =================
     private void addToCart(Item item) {
-        // ✅ đảm bảo cartService luôn có trước khi dùng
-        ensureCartService();
+        // ✅ Không tự tạo cartService nữa -> phải được inject từ Dashboard
+        if (cartService == null) {
+            alert("CartService chưa được inject từ Dashboard (cartService = null).", Alert.AlertType.ERROR);
+            return;
+        }
 
         try {
-            // ✅ lấy accountId theo ưu tiên:
-            // 1) từ customerMainController (nếu inject được)
-            // 2) fallback từ currentAccountId
             Long accountId = null;
+
+            // ưu tiên lấy từ dashboard nếu có
             if (customerMainController != null) {
                 accountId = customerMainController.getCurrentAccountId();
             }
@@ -235,7 +236,6 @@ public class CustomerItemsController implements Initializable {
             Long itemId = item.getId().longValue();
             cartService.addToCart(cart.getId(), itemId, 1, item.getPrice());
 
-            // ✅ update badge nếu có mainController
             if (customerMainController != null) {
                 customerMainController.updateCartCount();
             }
@@ -246,15 +246,6 @@ public class CustomerItemsController implements Initializable {
             ex.printStackTrace();
             alert("Không thể thêm vào giỏ: " + ex.getMessage(), Alert.AlertType.ERROR);
         }
-    }
-
-
-    private void ensureCartService() {
-        if (cartService != null) return;
-
-        var sf = HibernateUtil.getSessionFactory();
-        cartService = new CartService(new CartRepositoryImpl(sf));
-        System.out.println("[DEBUG] cartService fallback created");
     }
 
     // ================= DETAIL =================

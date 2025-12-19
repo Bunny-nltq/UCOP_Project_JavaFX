@@ -15,7 +15,6 @@ import com.ucop.repository.CartRepository;
 import com.ucop.repository.OrderRepository;
 import com.ucop.repository.ShipmentRepository;
 import com.ucop.repository.StockItemRepository;
-import com.ucop.util.OrderNumberGenerator;
 
 public class OrderService {
 
@@ -47,7 +46,7 @@ public class OrderService {
         if (cartId == null || cartId <= 0) {
             throw new IllegalArgumentException("Cart ID must be valid");
         }
-        
+
         if (itemDTO == null || itemDTO.getItemId() == null || itemDTO.getQuantity() <= 0) {
             throw new IllegalArgumentException("Invalid cart item data");
         }
@@ -112,55 +111,80 @@ public class OrderService {
 
         cartRepository.update(cart);
     }
+
     public void update(Order order) {
         orderRepository.update(order);
     }
 
-    // Place order
-    public Order placeOrder(Long cartId, Order.OrderStatus initialStatus) {
-
+    public Order placeOrder(Long cartId, Order.OrderStatus status) {
+        // 1) lấy cart + items
         Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new IllegalArgumentException("Cart not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Cart not found: " + cartId));
 
-        if (cart.getItems().isEmpty()) {
+        if (cart.getItems() == null || cart.getItems().isEmpty()) {
             throw new IllegalArgumentException("Cart is empty");
         }
 
-        Order order = new Order(cart.getAccountId());
-        order.setOrderNumber(OrderNumberGenerator.generateOrderNumber());
-        order.setStatus(initialStatus);
-        order.setPlacedAt(LocalDateTime.now());
-
+        // 2) tính subtotal từ cart_items
         BigDecimal subtotal = BigDecimal.ZERO;
-
-        for (CartItem cartItem : cart.getItems()) {
-            OrderItem orderItem = new OrderItem(
-                    cartItem.getItemId(),
-                    cartItem.getQuantity(),
-                    cartItem.getUnitPrice()
-            );
-            order.addItem(orderItem);
-            subtotal = subtotal.add(orderItem.getSubtotal());
+        for (CartItem ci : cart.getItems()) {
+            BigDecimal unit = ci.getUnitPrice() == null ? BigDecimal.ZERO : ci.getUnitPrice();
+            BigDecimal line = unit.multiply(BigDecimal.valueOf(ci.getQuantity()));
+            subtotal = subtotal.add(line);
         }
 
+        // 3) tạo order
+        Order order = new Order();
+        order.setAccountId(cart.getAccountId());
+        order.setStatus(status);
+        order.setPlacedAt(LocalDateTime.now());
+
+        // ✅ BẮT BUỘC: orderNumber NOT NULL
+        order.setOrderNumber(generateOrderNumber());
+
+        // 4) ✅ SET các cột tiền (tối thiểu phải có subtotal + grandTotal)
         order.setSubtotal(subtotal);
+        order.setTaxAmount(BigDecimal.ZERO);
+        order.setShippingFee(BigDecimal.ZERO);
+        order.setItemDiscount(BigDecimal.ZERO);
+        order.setCartDiscount(BigDecimal.ZERO);
+        order.setCodFee(BigDecimal.ZERO);
+        order.setGatewayFee(BigDecimal.ZERO);
 
-        Order savedOrder = orderRepository.save(order);
+        BigDecimal grandTotal = subtotal
+                .add(order.getTaxAmount())
+                .add(order.getShippingFee())
+                .add(order.getCodFee())
+                .add(order.getGatewayFee())
+                .subtract(order.getItemDiscount())
+                .subtract(order.getCartDiscount());
 
-        cart.clearCart();
-        cartRepository.update(cart);
+        order.setGrandTotal(grandTotal);
+        order.setAmountDue(grandTotal);
 
-        return savedOrder;
+        // 5) save order
+        orderRepository.save(order);
+
+        // 6) (nếu bạn có move cart->order_items thì làm ở đây)
+
+        return order;
     }
 
-    /**
-     * Reserve stock for order items with improved performance
-     */
+    // ✅ tạo mã đơn hàng dạng: ORD-YYYYMMDD-XXXXX (giống format bạn đang thấy)
+    private String generateOrderNumber() {
+        String date = java.time.LocalDate.now()
+                .format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE); // yyyyMMdd
+        String rnd = java.util.UUID.randomUUID()
+                .toString().replace("-", "")
+                .substring(0, 5).toUpperCase();
+        return "ORD-" + date + "-" + rnd;
+    }
+
     public void reserveStock(Long orderId, Long warehouseId) {
         if (orderId == null || orderId <= 0) {
             throw new IllegalArgumentException("Order ID must be valid");
         }
-        
+
         if (warehouseId == null || warehouseId <= 0) {
             warehouseId = 1L; // Default to primary warehouse
         }
@@ -171,10 +195,10 @@ public class OrderService {
         }
 
         Order order = orderOpt.get();
-        
+
         // Fetch all stock items for warehouse once, not per item
         List<StockItem> warehouseStocks = stockItemRepository.findByWarehouseId(warehouseId);
-        
+
         for (OrderItem item : order.getItems()) {
             Optional<StockItem> foundStock = warehouseStocks.stream()
                     .filter(si -> si.getItemId().equals(item.getItemId()))
@@ -182,8 +206,8 @@ public class OrderService {
 
             if (foundStock.isEmpty() || !foundStock.get().canAllocate(item.getQuantity().longValue())) {
                 throw new IllegalStateException(
-                        "Insufficient stock for item: " + item.getItemId() + 
-                        " (required: " + item.getQuantity() + ")"
+                        "Insufficient stock for item: " + item.getItemId() +
+                                " (required: " + item.getQuantity() + ")"
                 );
             }
 
@@ -200,7 +224,7 @@ public class OrderService {
         if (orderId == null || orderId <= 0) {
             throw new IllegalArgumentException("Order ID must be valid");
         }
-        
+
         if (warehouseId == null || warehouseId <= 0) {
             warehouseId = 1L; // Default to primary warehouse
         }
@@ -211,16 +235,16 @@ public class OrderService {
         }
 
         Order order = orderOpt.get();
-        
+
         if (order.getStatus() == Order.OrderStatus.CANCELED) {
             throw new IllegalStateException("Order is already canceled");
         }
-        
+
         order.setStatus(Order.OrderStatus.CANCELED);
 
         // Fetch warehouse stocks once for efficiency
         List<StockItem> warehouseStocks = stockItemRepository.findByWarehouseId(warehouseId);
-        
+
         // Unreserve stock
         for (OrderItem item : order.getItems()) {
             warehouseStocks.stream()
@@ -242,11 +266,11 @@ public class OrderService {
         if (orderId == null || orderId <= 0) {
             throw new IllegalArgumentException("Order ID must be valid");
         }
-        
+
         if (newStatus == null) {
             throw new IllegalArgumentException("Order status cannot be null");
         }
-        
+
         if (warehouseId == null || warehouseId <= 0) {
             warehouseId = 1L; // Default to primary warehouse
         }
@@ -258,11 +282,11 @@ public class OrderService {
 
         Order order = orderOpt.get();
         Order.OrderStatus previousStatus = order.getStatus();
-        
+
         // When order is PAID, deduct from inventory
         if (newStatus == Order.OrderStatus.PAID && previousStatus != Order.OrderStatus.PAID) {
             List<StockItem> warehouseStocks = stockItemRepository.findByWarehouseId(warehouseId);
-            
+
             for (OrderItem item : order.getItems()) {
                 warehouseStocks.stream()
                         .filter(si -> si.getItemId().equals(item.getItemId()))
@@ -273,19 +297,24 @@ public class OrderService {
                         });
             }
         }
-        
+
         order.setStatus(newStatus);
         order.setUpdatedAt(LocalDateTime.now());
-        
+
         if (newStatus == Order.OrderStatus.DELIVERED) {
             order.setDeliveredAt(LocalDateTime.now());
         }
-        
+
         orderRepository.update(order);
     }
 
     public Optional<Order> getOrderById(Long orderId) {
         return orderRepository.findById(orderId);
+    }
+
+    public List<Order> findByAccountId(Long accountId) {
+        if (accountId == null) return java.util.Collections.emptyList();
+        return orderRepository.findByAccountId(accountId);
     }
 
     public List<Order> getOrdersByAccountId(Long accountId) {

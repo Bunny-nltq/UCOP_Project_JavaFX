@@ -32,7 +32,7 @@ public class CustomerCartController {
     @FXML private VBox cartItemsContainer;
     @FXML private Label lblEmptyCart;
 
-    // ===== RIGHT / CHECKOUT =====
+    // ===== RIGHT / CHECKOUT (có thể null nếu FXML chưa thêm panel) =====
     @FXML private VBox checkoutPanel;
 
     @FXML private TextField txtPromoCode;
@@ -50,7 +50,7 @@ public class CustomerCartController {
     @FXML private TextField txtShipPostal;
     @FXML private Label lblShipMsg;
 
-    // ===== SUMMARY LABELS =====
+    // ===== SUMMARY LABELS (có thể null nếu FXML chưa có) =====
     @FXML private Label lblTotalAmount;
     @FXML private Label lblTotalItems;
     @FXML private Label lblSubtotalAmount;
@@ -61,7 +61,8 @@ public class CustomerCartController {
     private ItemService itemService;
     private OrderService orderService;
 
-    private CustomerMainController mainController;
+    // ✅ FIX: nhận mainController dạng Object để KHÔNG bị lỗi type mismatch khi inject
+    private Object mainController;
 
     private Long currentAccountId;
     private Cart currentCart;
@@ -80,32 +81,36 @@ public class CustomerCartController {
         this.cartService = cartService;
 
         ensureServices();
-        loadCart();
+        loadCart(); // ✅ giờ public nên gọi được
     }
 
-    public void setMainController(CustomerMainController mainController) {
+    // ✅ FIX: nhận Object để c.setMainController(this) luôn OK
+    public void setMainController(Object mainController) {
         this.mainController = mainController;
     }
 
     public void setCurrentAccountId(Long accountId) {
         this.currentAccountId = accountId;
         ensureServices();
-        loadCart();
+        loadCart(); // ✅ giờ public nên gọi được
     }
+
+    public void setCartService(CartService s) { this.cartService = s; }
+    public void setOrderService(OrderService s) { this.orderService = s; }
+    public void setItemService(ItemService s) { this.itemService = s; }
 
     // ================= INIT =================
     @FXML
     public void initialize() {
-        // setup toggle group
-        rbPickup.setToggleGroup(deliveryGroup);
-        rbShip.setToggleGroup(deliveryGroup);
+        // ✅ tránh NPE nếu FXML chưa có các node này
+        if (rbPickup != null) rbPickup.setToggleGroup(deliveryGroup);
+        if (rbShip != null) rbShip.setToggleGroup(deliveryGroup);
 
-        // default mode
-        rbPickup.setSelected(true);
+        if (rbPickup != null) rbPickup.setSelected(true);
         updateDeliveryUI();
 
-        lblPromoMsg.setText("");
-        lblShipMsg.setText("");
+        if (lblPromoMsg != null) lblPromoMsg.setText("");
+        if (lblShipMsg != null) lblShipMsg.setText("");
     }
 
     // ================= FALLBACK SERVICES =================
@@ -129,7 +134,8 @@ public class CustomerCartController {
     }
 
     // ================= LOAD CART =================
-    private void loadCart() {
+    // ✅ FIX: đổi private -> public để MainController gọi được: c.loadCart();
+    public void loadCart() {
         System.out.println("[DEBUG][Cart] loadCart: accountId=" + currentAccountId
                 + ", cartService=" + (cartService != null)
                 + ", itemService=" + (itemService != null));
@@ -145,14 +151,26 @@ public class CustomerCartController {
         displayCartItems();
         updateCartSummary();
 
-        if (mainController != null) mainController.updateCartCount();
+        // ✅ gọi mainController.updateCartCount() nếu có, không có thì thôi (không crash)
+        invokeMain("updateCartCount");
+    }
+
+    private void invokeMain(String methodName) {
+        if (mainController == null) return;
+        try {
+            mainController.getClass().getMethod(methodName).invoke(mainController);
+        } catch (Exception ignored) {
+            // không có method => bỏ qua
+        }
     }
 
     private void showEmpty(String msg) {
-        cartItemsContainer.getChildren().clear();
-        lblEmptyCart.setText(msg);
-        lblEmptyCart.setVisible(true);
-        lblEmptyCart.setManaged(true);
+        if (cartItemsContainer != null) cartItemsContainer.getChildren().clear();
+        if (lblEmptyCart != null) {
+            lblEmptyCart.setText(msg);
+            lblEmptyCart.setVisible(true);
+            lblEmptyCart.setManaged(true);
+        }
         if (checkoutPanel != null) {
             checkoutPanel.setDisable(true);
             checkoutPanel.setOpacity(0.6);
@@ -161,14 +179,16 @@ public class CustomerCartController {
 
     // ================= DISPLAY =================
     private void displayCartItems() {
+        if (cartItemsContainer == null) return;
         cartItemsContainer.getChildren().clear();
 
         boolean empty = (currentCart == null || currentCart.getItems() == null || currentCart.getItems().isEmpty());
         if (empty) {
-            lblEmptyCart.setText("Giỏ hàng của bạn đang trống");
-            lblEmptyCart.setVisible(true);
-            lblEmptyCart.setManaged(true);
-
+            if (lblEmptyCart != null) {
+                lblEmptyCart.setText("Giỏ hàng của bạn đang trống");
+                lblEmptyCart.setVisible(true);
+                lblEmptyCart.setManaged(true);
+            }
             if (checkoutPanel != null) {
                 checkoutPanel.setDisable(true);
                 checkoutPanel.setOpacity(0.6);
@@ -176,8 +196,10 @@ public class CustomerCartController {
             return;
         }
 
-        lblEmptyCart.setVisible(false);
-        lblEmptyCart.setManaged(false);
+        if (lblEmptyCart != null) {
+            lblEmptyCart.setVisible(false);
+            lblEmptyCart.setManaged(false);
+        }
 
         if (checkoutPanel != null) {
             checkoutPanel.setDisable(false);
@@ -193,7 +215,7 @@ public class CustomerCartController {
         Item item = null;
         try {
             Long iid = cartItem.getItemId();
-            if (iid != null) item = itemService.getItemById(iid); // ✅ dùng overload Long
+            if (iid != null) item = itemService.getItemById(iid); // ✅ ItemService phải có getItemById(Long)
         } catch (Exception ignored) {}
 
         VBox card = new VBox(10);
@@ -250,6 +272,8 @@ public class CustomerCartController {
     // ================= PROMO =================
     @FXML
     private void handleApplyPromo() {
+        if (txtPromoCode == null || lblPromoMsg == null) return;
+
         String code = (txtPromoCode.getText() == null) ? "" : txtPromoCode.getText().trim();
 
         if (code.isEmpty()) {
@@ -260,8 +284,6 @@ public class CustomerCartController {
             return;
         }
 
-        // ✅ Demo rule (bạn có thể nối DB promotion sau)
-        // SALE10 = giảm 10% tối đa 50k
         if ("SALE10".equalsIgnoreCase(code)) {
             appliedPromoCode = "SALE10";
             lblPromoMsg.setText("Áp dụng mã SALE10 (giảm 10%, tối đa 50.000đ).");
@@ -283,16 +305,16 @@ public class CustomerCartController {
 
     private void updateDeliveryUI() {
         boolean ship = (rbShip != null && rbShip.isSelected());
-        shippingForm.setVisible(ship);
-        shippingForm.setManaged(ship);
-        lblShipMsg.setText("");
+        if (shippingForm != null) {
+            shippingForm.setVisible(ship);
+            shippingForm.setManaged(ship);
+        }
+        if (lblShipMsg != null) lblShipMsg.setText("");
     }
 
     // ================= SUMMARY =================
     private void updateCartSummary() {
-        if (currentCart == null || currentCart.getItems() == null) {
-            return;
-        }
+        if (currentCart == null || currentCart.getItems() == null) return;
 
         BigDecimal subtotal = currentCart.getItems().stream()
                 .map(CartItem::getSubtotal)
@@ -301,11 +323,9 @@ public class CustomerCartController {
         int totalItems = currentCart.getItems().stream()
                 .mapToInt(CartItem::getQuantity).sum();
 
-        // shipping fee rule: ship => 30k, pickup => 0
         boolean ship = rbShip != null && rbShip.isSelected();
         shippingFee = ship ? new BigDecimal("30000") : BigDecimal.ZERO;
 
-        // discount rule
         discountAmount = BigDecimal.ZERO;
         if ("SALE10".equalsIgnoreCase(appliedPromoCode)) {
             BigDecimal tenPct = subtotal.multiply(new BigDecimal("0.10"));
@@ -313,15 +333,15 @@ public class CustomerCartController {
             discountAmount = tenPct.min(cap);
         }
 
-        lblTotalItems.setText(totalItems + " sản phẩm");
-        lblSubtotalAmount.setText(formatPrice(subtotal));
-        lblDiscountAmount.setText(formatPrice(discountAmount));
-        lblShippingFee.setText(formatPrice(shippingFee));
+        if (lblTotalItems != null) lblTotalItems.setText(totalItems + " sản phẩm");
+        if (lblSubtotalAmount != null) lblSubtotalAmount.setText(formatPrice(subtotal));
+        if (lblDiscountAmount != null) lblDiscountAmount.setText(formatPrice(discountAmount));
+        if (lblShippingFee != null) lblShippingFee.setText(formatPrice(shippingFee));
 
         BigDecimal total = subtotal.subtract(discountAmount).add(shippingFee);
         if (total.compareTo(BigDecimal.ZERO) < 0) total = BigDecimal.ZERO;
 
-        lblTotalAmount.setText(formatPrice(total));
+        if (lblTotalAmount != null) lblTotalAmount.setText(formatPrice(total));
     }
 
     // ================= ACTION =================
@@ -335,8 +355,8 @@ public class CustomerCartController {
         appliedPromoCode = null;
         discountAmount = BigDecimal.ZERO;
         shippingFee = BigDecimal.ZERO;
-        txtPromoCode.setText("");
-        lblPromoMsg.setText("");
+        if (txtPromoCode != null) txtPromoCode.setText("");
+        if (lblPromoMsg != null) lblPromoMsg.setText("");
         loadCart();
     }
 
@@ -344,13 +364,11 @@ public class CustomerCartController {
     private void handleCheckout() {
         ensureServices();
 
-        // 1) Validate accountId trước
         if (currentAccountId == null) {
             showInfo("Thiếu accountId. Vui lòng đăng nhập lại!");
             return;
         }
 
-        // 2) LUÔN lấy cart mới nhất từ DB trước khi checkout (tránh currentCart bị stale/rỗng giả)
         currentCart = cartService.getOrCreateCart(currentAccountId);
 
         if (currentCart == null || currentCart.getId() == null) {
@@ -358,7 +376,6 @@ public class CustomerCartController {
             return;
         }
 
-        // 3) Kiểm tra cart rỗng trước khi gọi placeOrder (tránh app crash)
         if (currentCart.getItems() == null || currentCart.getItems().isEmpty()) {
             showInfo("Giỏ hàng trống! Vui lòng thêm sản phẩm trước khi thanh toán.");
             loadCart();
@@ -367,7 +384,6 @@ public class CustomerCartController {
 
         boolean ship = rbShip != null && rbShip.isSelected();
 
-        // 4) Validate shipping nếu ship mode
         if (ship) {
             String n = v(txtShipName);
             String p = v(txtShipPhone);
@@ -375,18 +391,16 @@ public class CustomerCartController {
             String c = v(txtShipCity);
 
             if (n.isEmpty() || p.isEmpty() || a.isEmpty() || c.isEmpty()) {
-                lblShipMsg.setText("Vui lòng nhập đầy đủ họ tên, SĐT, địa chỉ, thành phố.");
+                if (lblShipMsg != null) lblShipMsg.setText("Vui lòng nhập đầy đủ họ tên, SĐT, địa chỉ, thành phố.");
                 return;
             }
-            lblShipMsg.setText("");
+            if (lblShipMsg != null) lblShipMsg.setText("");
         }
 
-        // 5) Tạo order từ cart (BẮT lỗi Cart is empty để không văng chương trình)
         Order order;
         try {
             order = orderService.placeOrder(currentCart.getId(), Order.OrderStatus.PENDING_PAYMENT);
         } catch (IllegalArgumentException ex) {
-            // placeOrder() sẽ throw "Cart is empty" nếu cart.getItems().isEmpty() :contentReference[oaicite:1]{index=1}
             showInfo("Không thể thanh toán: " + ex.getMessage());
             loadCart();
             return;
@@ -397,7 +411,6 @@ public class CustomerCartController {
             return;
         }
 
-        // 6) Set các field theo bảng orders (promo + ship info) rồi update
         try {
             if (appliedPromoCode != null && !appliedPromoCode.isBlank()) {
                 order.setPromotionCode(appliedPromoCode);
@@ -424,25 +437,18 @@ public class CustomerCartController {
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            showInfo(
-                "Đặt hàng thành công nhưng chưa lưu được thông tin ship/promo.\n" +
-                "Bạn cần kiểm tra Order entity có đủ field/setter (promotion_code, shipping_*)"
-            );
-            // vẫn reload cart để UI đồng bộ
+            showInfo("Đặt hàng thành công nhưng chưa lưu được thông tin ship/promo.\n" +
+                    "Bạn cần kiểm tra Order entity có đủ field/setter (promotion_code, shipping_*)");
             loadCart();
             return;
         }
 
         showInfo("Đặt hàng thành công!\nMã đơn: " + order.getOrderNumber());
-
-        // 7) Reload cart view (vì placeOrder() đã clear cart) :contentReference[oaicite:2]{index=2}
         loadCart();
 
-        if (mainController != null) {
-            mainController.handleMyOrders();
-        }
+        // ✅ gọi mainController.handleMyOrders() nếu có
+        invokeMain("handleMyOrders");
     }
-
 
     private String v(TextField tf) {
         return tf == null || tf.getText() == null ? "" : tf.getText().trim();

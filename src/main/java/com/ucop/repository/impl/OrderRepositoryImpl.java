@@ -20,19 +20,18 @@ public class OrderRepositoryImpl implements OrderRepository {
 
     @Override
     public Order save(Order order) {
-        if (order == null) throw new IllegalArgumentException("order is null");
-
         Transaction tx = null;
         try (Session session = sessionFactory.openSession()) {
             tx = session.beginTransaction();
-
-            // ✅ merge dùng được cho cả insert/update
-            Order managed = session.merge(order);
-
+            session.persist(order);
             tx.commit();
-            return managed;
+            return order;
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            try {
+                if (tx != null && tx.isActive()) tx.rollback();
+            } catch (Exception ignore) {
+                // tránh crash do "connection is closed"
+            }
             throw e;
         }
     }

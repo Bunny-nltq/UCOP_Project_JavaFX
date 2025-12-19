@@ -16,7 +16,6 @@ com\ucop\controller\customer\CustomerItemsController$1.class
 com\ucop\controller\staff\StaffOrderController$2.class
 com\ucop\dao\CartItemDAO.class
 com\ucop\controller\customer\ApplyPromotionController$1.class
-com\ucop\controller\customer\CustomerOrderController$3.class
 com\ucop\entity\Customer.class
 com\ucop\controller\customer\ApplyPromotionController.class
 com\ucop\controller\customer\CustomerOrderController.class
@@ -87,7 +86,6 @@ com\ucop\service\RoleService.class
 com\ucop\repository\RefundRepository.class
 com\ucop\controller\admin\PromotionController.class
 com\ucop\repository\impl\ShipmentRepositoryImpl.class
-com\ucop\controller\customer\CustomerOrderController$2.class
 com\ucop\dao\GenericDAO.class
 com\ucop\dao\PaymentCalculationDAO.class
 com\ucop\util\HashUtil.class
