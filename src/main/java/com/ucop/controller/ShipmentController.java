@@ -1,130 +1,64 @@
 package com.ucop.controller;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
-import com.ucop.entity.Appointment;
 import com.ucop.entity.Shipment;
 import com.ucop.service.ShipmentService;
 
 /**
- * Controller for Shipment & Appointment Management
+ * Controller for Shipment Management
+ * (✅ fixed: remove Appointment features to match ShipmentService without appointment)
  */
 public class ShipmentController {
 
-    private ShipmentService shipmentService;
-    
+    private final ShipmentService shipmentService;
+
     public ShipmentController(ShipmentService shipmentService) {
+        if (shipmentService == null) {
+            throw new IllegalArgumentException("ShipmentService is null");
+        }
         this.shipmentService = shipmentService;
     }
-
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
 
     /**
      * Create shipment
      */
     public Shipment createShipment(Long orderId, String carrier, Long warehouseId) {
-        try {
-            return shipmentService.createShipment(orderId, carrier, warehouseId);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return shipmentService.createShipment(orderId, carrier, warehouseId);
     }
 
     /**
      * Get shipment by ID
      */
     public Optional<Shipment> getShipment(Long shipmentId) {
-        try {
-            return shipmentService.getShipment(shipmentId);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return shipmentService.getShipment(shipmentId);
     }
 
     /**
-     * Track shipment
+     * Track shipment by tracking number
      */
     public Optional<Shipment> trackShipment(String trackingNumber) {
-        try {
-            return shipmentService.trackShipment(trackingNumber);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return shipmentService.trackShipment(trackingNumber);
     }
 
     /**
      * Get shipments by order
      */
     public List<Shipment> getShipmentsByOrder(Long orderId) {
-        try {
-            return shipmentService.getShipmentsByOrder(orderId);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return shipmentService.getShipmentsByOrder(orderId);
     }
 
     /**
      * Update shipment status
      */
     public void updateShipmentStatus(Long shipmentId, String status) {
+        Shipment.ShipmentStatus shipmentStatus;
         try {
-            Shipment.ShipmentStatus shipmentStatus = Shipment.ShipmentStatus.valueOf(status);
-            shipmentService.updateShipmentStatus(shipmentId, shipmentStatus);
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid shipment status", e);
+            shipmentStatus = Shipment.ShipmentStatus.valueOf(status);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Invalid shipment status: " + status, e);
         }
-    }
-
-    /**
-     * Create appointment
-     */
-    public Appointment createAppointment(Long orderId, String scheduledTime, String location) {
-        try {
-            LocalDateTime time = LocalDateTime.parse(scheduledTime, formatter);
-            return shipmentService.createAppointment(orderId, time, location);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Get appointment
-     */
-    public Optional<Appointment> getAppointment(Long appointmentId) {
-        try {
-            return shipmentService.getAppointment(appointmentId);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Get appointments by order
-     */
-    public List<Appointment> getAppointmentsByOrder(Long orderId) {
-        try {
-            return shipmentService.getAppointmentsByOrder(orderId);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Update appointment status
-     */
-    public void updateAppointmentStatus(Long appointmentId, String status) {
-        try {
-            Appointment.AppointmentStatus appointmentStatus = Appointment.AppointmentStatus.valueOf(status);
-            shipmentService.updateAppointmentStatus(appointmentId, appointmentStatus);
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid appointment status", e);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        shipmentService.updateShipmentStatus(shipmentId, shipmentStatus);
     }
 }

@@ -72,11 +72,16 @@ public class ItemDAO {
         }
     }
 
-    public Item findById(Long id) {   // ✅ FIX: Long
-        if (id == null) return null;
+    public Item findById(Integer id) {
         try (Session session = sessionFactory.openSession()) {
             return session.get(Item.class, id);
         }
+    }
+
+    // overload cho Long
+    public Item findById(Long id) {
+        if (id == null) return null;
+        return findById(Integer.valueOf(id.toString()));
     }
 
     public Item findBySku(String sku) {

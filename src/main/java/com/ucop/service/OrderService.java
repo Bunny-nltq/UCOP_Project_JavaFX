@@ -112,6 +112,9 @@ public class OrderService {
 
         cartRepository.update(cart);
     }
+    public void update(Order order) {
+        orderRepository.update(order);
+    }
 
     // Place order
     public Order placeOrder(Long cartId, Order.OrderStatus initialStatus) {

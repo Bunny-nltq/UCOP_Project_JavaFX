@@ -56,12 +56,17 @@ public class ItemService {
 
     // ========================= COMMON =========================
 
-    /**
-     * ✅ FIX: Item.id là Long
-     */
-    public Item getItemById(Long id) {
+ // chuẩn cho entity
+    public Item getItemById(Integer id) {
         return (id == null) ? null : dao.findById(id);
     }
+
+    // adapter cho Cart / Order / Stock
+    public Item getItemById(Long id) {
+        if (id == null) return null;
+        return dao.findById(id.intValue());
+    }
+
 
     // ========================= STAFF =========================
 
